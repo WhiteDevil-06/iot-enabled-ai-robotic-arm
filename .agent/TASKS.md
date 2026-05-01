@@ -6,8 +6,8 @@
 - [ ] Initialize backend server (Flask/FastAPI)
 - [ ] Develop ESP32 firmware for basic HTTP server and servo control
 - [ ] Define HTTP API endpoints for communication
-- [ ] Collect image dataset
-- [ ] Train basic CNN model
+- [/] Collect image dataset
+- [/] Train basic CNN model
 - [ ] Integrate Camera Feed into UI
 
 ## Completed Tasks

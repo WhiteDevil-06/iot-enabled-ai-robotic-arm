@@ -9,12 +9,10 @@
 - Optional dashboard UI
 
 ## AI Model:
-- CNN-based image classification
-- Classes: Good, Average, Defective
+- Custom CNN architecture (Conv2D -> MaxPool -> Dense -> Sigmoid)
+- Binary Classification: 0 -> Good (includes average), 1 -> Defective
 - Fixed input size: 224x224
-
-## Decision Logic:
-- Good → Accept
+- Training Environment: Google Colab (T4 GPU)
 - Average → Accept (current constraint)
 - Defective → Reject
 

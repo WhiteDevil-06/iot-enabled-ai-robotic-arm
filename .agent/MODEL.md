@@ -1,19 +1,23 @@
 # AI Model Details
 
 ## Architecture
-- CNN-based image classification
+- Custom CNN: 3x (Conv2D -> MaxPool2D) -> Flatten -> Dense (128) -> Dense (1, Sigmoid)
+- Optimizer: Adam
+- Loss: Binary Crossentropy
 - Fixed input size: 224x224
 
 ## Classes
-1. Good
-2. Average
-3. Defective
+0. Good (Includes Average/Acceptable items)
+1. Defective (Rotten/Rejected items)
 
 ## Dataset
-- *To be determined/collected.*
+- **Good Source**: Fruits-360 (Clean Cherries, Strawberries, Apples)
+- **Defective Source**: Mendeley Data / ScienceDirect (Rotten apples/bananas/oranges)
+- Structure: `dataset/good/` and `dataset/defective/`
 
 ## Training
-- *To be set up (potentially via Google Colab).*
+- **Environment**: Google Colab (T4 GPU)
+- **Notebook**: `ai/model/CNN_Training_Colab.ipynb`
 
 ## Export
-- *Export format (e.g., TFLite, ONNX, or standard H5/SavedModel) to be decided.*
+- Format: `.h5` (saved as `robotic_arm_classifier.h5`)
