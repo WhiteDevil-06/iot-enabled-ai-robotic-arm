@@ -1,0 +1,15 @@
+# Environments
+venv/
+.env
+__pycache__/
+*.pyc
+
+# Data & Models
+dataset/
+exported_models/
+*.h5
+*.tflite
+*.keras
+
+# OS Files
+.DS_Store
