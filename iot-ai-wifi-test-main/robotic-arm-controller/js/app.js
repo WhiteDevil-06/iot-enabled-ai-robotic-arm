@@ -1,9 +1,11 @@
 import { stateManager } from './state.js';
 import { commsAgent } from './comms.js';
 import { initJoysticks } from './joystick.js';
+import { initKeyboardControls } from './keyboard.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initJoysticks();
+    initKeyboardControls();
 
     const els = {
         baseSlider: document.getElementById('slider-base'),
