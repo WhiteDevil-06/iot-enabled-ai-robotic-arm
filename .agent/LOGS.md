@@ -5,3 +5,4 @@
 - **2026-05-01**: Finalized dataset strategy (Fruits-360 + Mendeley ScienceDirect) and generated Google Colab Notebook for custom CNN training.
 - **2026-05-02**: Investigated Jupyter notebook WebView error in VS Code (`InvalidStateError` on Service Worker registration). Confirmed it is a VS Code/Electron environment issue, not a code bug.
 - **2026-05-04**: Full codebase and project environment audit performed. KI Rulebook created/updated in agent knowledge base. Current status: AI model training phase (Colab notebook ready, not yet executed). Frontend, backend, and ESP32 firmware are all pending.
+- **2026-05-11**: Re-scanned `.agent` folder to update internal rulebook and context. Acknowledged constraints (Mendeley dataset only, 6 classes, local network deployment, simple CNN architecture).
