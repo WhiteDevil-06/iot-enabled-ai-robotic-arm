@@ -8,9 +8,9 @@
    - `T`: Sequentially run saved actions with an 800ms delay between steps.
    - `R`: Reset memory buffer.
 4. **UI Dashboard**: Sleek dark-mode glassmorphism styling with a live status indicator and a new keyboard shortcut helper panel.
+5. **ESP32 Firmware**: The Arduino code for the ESP32 AP and PWM server has been successfully integrated into the repository (`esp32-firmware/esp32-firmware.ino`).
 
 ## What is to be done NEXT
-1. **ESP32 Firmware Finalization**: Ensure the ESP32 `GET /move` endpoint logic is rock solid and handles the throttled requests cleanly.
-2. **Backend AI Integration**: The Flask/FastAPI backend needs to be connected so that when a physical fruit passes the webcam, the laptop CNN outputs the prediction and fires the identical `/move` command.
+1. **Backend AI Integration**: The Flask/FastAPI backend needs to be connected so that when a physical fruit passes the webcam, the laptop CNN outputs the prediction and fires the identical `/move` command.
 3. **Physical Hardware Testing**: Test the Action Memory system connected to the physical arm to ensure the 800ms step delay is sufficient for the real servos to reach their targets without burning out.
 4. **Conveyor Control**: Introduce logic to pause the conveyor belt during prediction and resume after the sorting action is complete.
