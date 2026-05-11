@@ -1,44 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Robotic Arm Control Dashboard</title>
+    <title>AI Fruit Sorting System</title>
     <link rel="stylesheet" href="css/style.css">
     <!-- Google Fonts for Modern Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- NippleJS for joysticks -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
+    <!-- Chart.js for History Page -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
-<body>
-    <div class="dashboard-container">
-        <!-- Header -->
-        <header class="dashboard-header">
-            <div class="title-section">
-                <h1>4-DOF Controller</h1>
-                <span class="subtitle">Robotic Arm Interface</span>
-            </div>
-            
-            <!-- Connection Config -->
-            <div class="connection-config">
-                <input type="text" id="esp-ip" value="192.168.1.100" placeholder="ESP32 IP">
-                <div class="status-indicator" id="status-indicator">
-                    <span class="status-dot"></span>
-                    <span class="status-text" id="status-text">Disconnected</span>
-                </div>
-            </div>
-        </header>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Left Panel: Base & Shoulder Joystick -->
-            <div class="joystick-panel left-panel">
-                <div class="panel-header">
-                    <h2>Base & Shoulder</h2>
-                    <span class="axis-hint">X: Base | Y: Shoulder</span>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="ri-robot-2-line"></i> AI Sorter</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item active" data-target="view-home">
+                    <i class="ri-home-5-line"></i> Home
+                </li>
+                <li class="nav-item" data-target="view-dashboard">
+                    <i class="ri-dashboard-3-line"></i> Dashboard
+                </li>
+                <li class="nav-item" data-target="view-history">
+                    <i class="ri-history-line"></i> History
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-wrapper">
+            <!-- HEADER -->
+            <header class="top-header">
+                <div class="header-title" id="current-view-title">Home Overview</div>
+                <div class="connection-config">
+                    <input type="text" id="esp-ip" value="192.168.1.100" placeholder="ESP32 IP">
+                    <div class="status-indicator" id="status-indicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text" id="status-text">Disconnected</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- VIEW: HOME -->
+            <section id="view-home" class="view-section active">
+                <div class="home-grid">
+                    <div class="card hero-card">
+                        <h1>AI-Based Robotic Fruit Sorting</h1>
+                        <p>Fully integrated system capable of detecting fruit type, identifying quality, and performing
+                            automated sorting using a 4-DOF robotic arm.</p>
+                        <button class="btn primary-btn" id="btn-start-demo">Start Dashboard Mode</button>
+                    </div>
+                    <div class="card metrics-card">
+                        <h3>System Metrics</h3>
+                        <div class="metric-stats">
+                            <div class="stat-box">
+                                <div class="stat-val">94.2%</div>
+                                <div class="stat-label">Accuracy</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-val">0</div>
+                                <div class="stat-label">Fruits Sorted</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card arch-card">
+                        <h3>Architecture Flow</h3>
+                        <div class="arch-diagram">
+                            <div class="arch-node">Webcam</div>
+                            <i class="ri-arrow-right-line"></i>
+                            <div class="arch-node highlight">AI Brain</div>
+                            <i class="ri-arrow-right-line"></i>
+                            <div class="arch-node">ESP32 Arm</div>
+                        </div>
+                    </div>
                 </div>
                 <div id="joystick-left" class="joystick-container"></div>
-                
+
                 <div class="manual-controls">
                     <div class="control-group">
                         <div class="control-header">
@@ -55,66 +101,50 @@
                         <input type="range" id="slider-shoulder" min="0" max="180" value="90">
                     </div>
                 </div>
+    </div>
+
+    <!-- Right Panel: Elbow & Claw Joystick -->
+    <div class="joystick-panel right-panel">
+        <div class="panel-header">
+            <h2>Elbow & Claw</h2>
+            <span class="axis-hint">X: Claw | Y: Elbow</span>
+        </div>
+        <div id="joystick-right" class="joystick-container"></div>
+
+        <div class="manual-controls">
+            <div class="control-group">
+                <div class="control-header">
+                    <label>Elbow</label>
+                    <span id="elbow-val">90°</span>
+                </div>
+                <input type="range" id="slider-elbow" min="0" max="180" value="90">
             </div>
-
-            <!-- Right Panel: Elbow & Claw Joystick -->
-            <div class="joystick-panel right-panel">
-                <div class="panel-header">
-                    <h2>Elbow & Claw</h2>
-                    <span class="axis-hint">X: Claw | Y: Elbow</span>
+            <div class="control-group">
+                <div class="control-header">
+                    <label>Claw</label>
+                    <span id="claw-val">90°</span>
                 </div>
-                <div id="joystick-right" class="joystick-container"></div>
-
-                <div class="manual-controls">
-                    <div class="control-group">
-                        <div class="control-header">
-                            <label>Elbow</label>
-                            <span id="elbow-val">90°</span>
-                        </div>
-                        <input type="range" id="slider-elbow" min="0" max="180" value="90">
-                    </div>
-                    <div class="control-group">
-                        <div class="control-header">
-                            <label>Claw</label>
-                            <span id="claw-val">90°</span>
-                        </div>
-                        <input type="range" id="slider-claw" min="0" max="180" value="90">
-                    </div>
-                </div>
+                <input type="range" id="slider-claw" min="0" max="180" value="90">
             </div>
         </div>
+    </div>
+    </div>
 
-        <!-- Keyboard Controls Helper -->
-        <div class="keyboard-helper">
-            <div class="helper-col">
-                <span><b>W/S</b> Shoulder</span>
-                <span><b>A/D</b> Base</span>
-            </div>
-            <div class="helper-col">
-                <span><b>↑/↓</b> Elbow</span>
-                <span><b>←/→</b> Claw</span>
-            </div>
-            <div class="helper-col memory-col">
-                <span><b>Q</b> Save Action</span>
-                <span><b>T</b> Run Actions</span>
-                <span><b>R</b> Reset</span>
-            </div>
+    <!-- Footer / Global Controls -->
+    <footer class="dashboard-footer">
+        <button id="btn-reset" class="btn primary-btn">Reset to Center</button>
+        <div class="toggle-container">
+            <label class="switch">
+                <input type="checkbox" id="mode-toggle">
+                <span class="slider round"></span>
+            </label>
+            <span class="mode-label">Manual Mode</span>
         </div>
-
-        <!-- Footer / Global Controls -->
-        <footer class="dashboard-footer">
-            <button id="btn-reset" class="btn primary-btn">Reset to Center</button>
-            <div class="toggle-container">
-                <label class="switch">
-                    <input type="checkbox" id="mode-toggle">
-                    <span class="slider round"></span>
-                </label>
-                <span class="mode-label">Manual Mode</span>
-            </div>
-        </footer>
+    </footer>
     </div>
 
     <!-- Scripts -->
     <script type="module" src="js/app.js"></script>
 </body>
+
 </html>

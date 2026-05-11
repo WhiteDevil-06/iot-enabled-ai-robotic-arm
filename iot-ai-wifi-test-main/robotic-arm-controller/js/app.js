@@ -17,9 +17,40 @@ document.addEventListener('DOMContentLoaded', () => {
         elbowVal: document.getElementById('elbow-val'),
         clawVal: document.getElementById('claw-val'),
         ipInput: document.getElementById('esp-ip'),
-        resetBtn: document.getElementById('btn-reset')
+        resetBtn: document.getElementById('btn-reset'),
+        
+        // Navigation Elements
+        navItems: document.querySelectorAll('.nav-item'),
+        viewSections: document.querySelectorAll('.view-section'),
+        currentViewTitle: document.getElementById('current-view-title'),
+        btnStartDemo: document.getElementById('btn-start-demo')
     };
 
+    // --- Navigation Logic ---
+    function switchView(targetId, title) {
+        els.navItems.forEach(item => item.classList.remove('active'));
+        els.viewSections.forEach(section => section.classList.remove('active'));
+        
+        const targetNav = Array.from(els.navItems).find(item => item.dataset.target === targetId);
+        if(targetNav) targetNav.classList.add('active');
+        
+        document.getElementById(targetId).classList.add('active');
+        els.currentViewTitle.textContent = title;
+    }
+
+    els.navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            const target = e.currentTarget.dataset.target;
+            const title = e.currentTarget.textContent.trim();
+            switchView(target, title + ' Overview');
+        });
+    });
+
+    els.btnStartDemo.addEventListener('click', () => {
+        switchView('view-dashboard', 'Dashboard Overview');
+    });
+
+    // --- Hardware Logic ---
     stateManager.subscribe((state) => {
         els.baseSlider.value = state.base;
         els.shoulderSlider.value = state.shoulder;
@@ -50,4 +81,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     stateManager.notify();
+
+    // --- Mock Chart for History ---
+    const ctx = document.getElementById('historyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Accept', 'Reject'],
+            datasets: [{
+                data: [12, 5], // Mock data
+                backgroundColor: ['#537A5A', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#CFDBD5' } }
+            }
+        }
+    });
 });
