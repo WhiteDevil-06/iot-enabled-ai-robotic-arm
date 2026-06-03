@@ -37,13 +37,15 @@
 - **Weak Class**: RottenGrape (57.5%) — visual ambiguity with FreshGrape
 - **Model Size**: 12.61 MB (3.3M parameters)
 
-## Milestone 4: Backend API & Integration (Pending)
-- [ ] Setup Laptop backend to capture USB webcam feed
-- [ ] Integrate CNN inference into the backend (load `final_model.keras` + `class_names.json`)
-- [ ] Link backend inference to the ESP32 API (`GET /move?base=X&shoulder=Y&elbow=Z&claw=W`)
+## Milestone 4: Backend API & Integration 🔄 IN PROGRESS
+- [x] Setup Laptop backend script to capture USB webcam feed (`realtime_classifier.py`)
+- [x] Integrate CNN inference into the backend (load `model.tflite`/`final_model.keras` + `class_names.json`)
+- [x] Link backend inference to the ESP32 API (`GET /move?base=X&shoulder=Y&elbow=Z&claw=W`)
+- [x] Implement background subtraction and object contour tracking (filtering curtains/arms)
+- [x] Implement confidence-based "Unknown Object" rejection (threshold = 0.85)
 - [ ] Implement Conveyor logic (pause on detection, resume after sort)
 
 ## Milestone 5: Dashboard Enhancement & Testing (Pending)
 - [ ] Finalize UI Dashboard sections (Home, Dashboard, History)
-- [ ] Live AI testing with physical fruits on conveyor
+- [ ] Live AI testing with physical fruits on conveyor (requires static white background)
 - [ ] Stability and edge-case testing

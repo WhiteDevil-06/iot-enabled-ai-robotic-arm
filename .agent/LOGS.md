@@ -1,5 +1,32 @@
 # Project Session Logs
 
+## Session: 2026-06-03
+
+### What Was Done
+- **AI Model Validation**: Confirmed validation accuracy boost from 88% to **90.0%** (achieved by user adding 25 extra images to the `RottenGrape` class, elevating its F1-score to 81%, precision to 90%, and recall to 74%).
+- **Webcam Real-Time Classification**:
+  - Created `ai/requirements.txt` defining Python library requirements (`opencv-python`, `numpy`, `tensorflow`, `requests`).
+  - Created `ai/realtime_classifier.py` implementing live webcam capture, TFLite/Keras loading, FPS counter, and ESP32 HTTP GET command routing.
+- **Advanced CV & Bounding Box Logic**:
+  - Added a **60-frame auto-exposure stabilization delay** to allow the camera brightness to settle on startup.
+  - Implemented **Grayscale Background Calibration** (averaging 15 frames) to isolate background curtains and walls.
+  - Added **Contour Tracking** that draws tight bounding boxes around fruits and ignores edge-touching border noise (user's hand/body).
+  - Configured the CNN to run predictions **only** on the cropped bounding box of the object (`object_crop`) to remove background interference.
+- **OOD ("Unknown Object") Rejection**: Configured a strict **0.85 confidence threshold**. Predictions below 0.85 display as `"Unknown Object"`, draw a gray box, and block robotic arm movements.
+- **Pre-processing Bug Fix**: Identified and resolved a **double-rescaling bug** where dividing by 255 in python, combined with the model's built-in `Rescaling(1./255)` layer, sent near-black images to the model. Keeping images in the `[0.0, 255.0]` range resolved the issue.
+
+### Key Results
+| Metric | Value |
+|--------|-------|
+| Val Accuracy | 90.0% (Epoch 13) |
+| Model Format | TFLite (`model.tflite`) or Keras (`final_model.keras`) |
+| Cooldown | 5.0 seconds between sorting commands |
+| Reject Threshold | 0.85 (Unknown Object filtering) |
+
+### Next Steps
+- Verify conveyor belt pauses and resumes when physical fruits pass.
+- Link Laptop to the physical robotic arm AP and test live WiFi actions.
+
 ## Session: 2026-05-11
 
 ### What Was Done
