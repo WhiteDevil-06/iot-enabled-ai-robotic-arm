@@ -9,6 +9,10 @@ export function initKeyboardControls() {
         // Ignore if typing in an input field (like the IP address)
         if (e.target.tagName.toLowerCase() === 'input') return;
 
+        // Ignore key controls if Manual Mode toggle is OFF
+        const modeToggle = document.getElementById('mode-toggle');
+        if (modeToggle && !modeToggle.checked) return;
+
         const key = e.key.toLowerCase();
         
         // Prevent default browser scrolling for arrow keys

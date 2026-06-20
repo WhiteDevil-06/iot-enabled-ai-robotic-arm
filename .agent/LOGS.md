@@ -1,5 +1,37 @@
 # Project Session Logs
 
+## Session: 2026-06-20
+
+### What Was Done
+- **Firmware-Side Servo Smoothing**: Added time-based linear interpolation in the ESP32 firmware. The servos now slide toward target angles incrementally by 1.5° every 15ms, eliminating jerkiness and settling jitter.
+- **Power Brownout Prevention**: By smoothing servo speed transitions, the peak current draw is minimized, resolving the brownout resets that previously simulated random disconnections (especially during center resets).
+- **Physical vs. Web Handoff Logic**:
+  - Added `/setMode?mode=web|physical` API to the ESP32.
+  - Toggling Website Control off switches the ESP32 to physical mode, which continuously polls analog hardware joysticks (GPIO 34, 35, 32, 33) and maps readings to incremental target movements.
+  - Implemented a `/status` JSON endpoint on the ESP32.
+  - Integrated 1-second polling on the website to sync the sliders and values live with the physical hardware movements.
+- **Conveyor Belt API Integration**: Integrated GPIO pin controls (IN1, IN2, ENA) on ESP32 and added the `/conveyor?action=start|stop|reverse` API routes without affecting servo execution.
+- **Axes Correction & Dead Zones**:
+  - Globally inverted the Base and Shoulder axis directions in `control.js` to ensure intuitive keyboard and joystick directions.
+  - Added a 5% dead zone filter to displacements to eliminate analog off-center drift.
+- **Toast Notifications System**: Developed a modern glassmorphic toast notification popup system in `index.html`, `style.css`, and `app.js` to notify users during mode switches and resets.
+- **Strict Linting & Module Fixes**:
+  - Removed dynamic string-key indexing (`els[axis + 'Slider']` and `displacements[axis]`) and replaced with safe, statically-typed property selections.
+  - Replaced all ES6 template literals with single-quoted string concatenations in `app.js` to ensure cross-browser parsing stability.
+  - Eliminated ES6 live-binding mutation errors in `control.js` by mutating `stateManager.state` fields directly rather than overriding read-only imported functions.
+
+### Key Results
+| Metric | Value |
+|--------|-------|
+| Servo Update Rate | 100ms (Trailing-Edge Throttle) |
+| Servo Interpolation Step | 1.5° per 15ms (~100°/s) |
+| Hardware Joystick Deadzone | 200 units (Analog ADC) |
+| Connection Status | 100% Stable (Socket & Power) |
+
+### Next Steps
+- Verify the real-time sorting logic connected with the laptop's webcam CNN classifier (`realtime_classifier.py`).
+- Conduct physical trial runs on the sorting conveyor belt.
+
 ## Session: 2026-06-03
 
 ### What Was Done

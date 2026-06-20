@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Robotic Arm Control Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts for Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- NippleJS for joysticks -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="title-section">
+                <h1>4-DOF Controller</h1>
+                <span class="subtitle">Robotic Arm Interface</span>
+            </div>
+            
+            <!-- Connection Config -->
+            <div class="connection-config">
+                <input type="text" id="esp-ip" value="192.168.1.100" placeholder="ESP32 IP">
+                <div class="status-indicator" id="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text" id="status-text">Disconnected</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel: Base & Shoulder Joystick -->
+            <div class="joystick-panel left-panel">
+                <div class="panel-header">
+                    <h2>Base & Shoulder</h2>
+                    <span class="axis-hint">X: Base | Y: Shoulder</span>
+                </div>
+                <div id="joystick-left" class="joystick-container"></div>
+                
+                <div class="manual-controls">
+                    <div class="control-group">
+                        <div class="control-header">
+                            <label>Base</label>
+                            <span id="base-val">90°</span>
+                        </div>
+                        <input type="range" id="slider-base" min="0" max="180" value="90">
+                    </div>
+                    <div class="control-group">
+                        <div class="control-header">
+                            <label>Shoulder</label>
+                            <span id="shoulder-val">90°</span>
+                        </div>
+                        <input type="range" id="slider-shoulder" min="0" max="180" value="90">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Elbow & Claw Joystick -->
+            <div class="joystick-panel right-panel">
+                <div class="panel-header">
+                    <h2>Elbow & Claw</h2>
+                    <span class="axis-hint">X: Claw | Y: Elbow</span>
+                </div>
+                <div id="joystick-right" class="joystick-container"></div>
+
+                <div class="manual-controls">
+                    <div class="control-group">
+                        <div class="control-header">
+                            <label>Elbow</label>
+                            <span id="elbow-val">90°</span>
+                        </div>
+                        <input type="range" id="slider-elbow" min="0" max="180" value="90">
+                    </div>
+                    <div class="control-group">
+                        <div class="control-header">
+                            <label>Claw</label>
+                            <span id="claw-val">90°</span>
+                        </div>
+                        <input type="range" id="slider-claw" min="0" max="180" value="90">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer / Global Controls -->
+        <footer class="dashboard-footer">
+            <button id="btn-reset" class="btn primary-btn">↺ Reset</button>
+            <div class="footer-memory-group">
+                <button id="btn-save-action" class="btn secondary-btn">💾 Save <kbd>Q</kbd></button>
+                <button id="btn-run-actions" class="btn primary-btn">▶ Play <kbd>T</kbd></button>
+                <button id="btn-clear-actions" class="btn secondary-btn">🗑 Clear <kbd>R</kbd></button>
+                <span id="memory-count" class="memory-count-badge">0 saved</span>
+            </div>
+            <div class="toggle-container">
+                <label class="switch">
+                    <input type="checkbox" id="mode-toggle" checked>
+                    <span class="slider round"></span>
+                </label>
+                <span class="mode-label" id="mode-label">Website Control</span>
+            </div>
+        </footer>
+
+        <!-- Keyboard Helper Legend -->
+        <div class="keyboard-helper">
+            <div class="helper-col">
+                <span class="col-title">Base &amp; Shoulder</span>
+                <span><b>W / S</b> Shoulder ↑↓</span>
+                <span><b>A / D</b> Base ←→</span>
+            </div>
+            <div class="helper-col">
+                <span class="col-title">Elbow &amp; Claw</span>
+                <span><b>↑ / ↓</b> Elbow ↑↓</span>
+                <span><b>← / →</b> Claw open/close</span>
+            </div>
+            <div class="helper-col memory-col">
+                <span class="col-title">Memory</span>
+                <span><b>Q</b> Save position</span>
+                <span><b>T</b> Replay all</span>
+                <span><b>R</b> Clear buffer</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
