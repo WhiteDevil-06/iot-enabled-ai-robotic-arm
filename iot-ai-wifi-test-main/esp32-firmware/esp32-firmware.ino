@@ -46,7 +46,7 @@ const int SERVO_MAX = 8192;
 // =====================================================
 const int CONVEYOR_FREQ = 1000;
 const int CONVEYOR_RES = 8;
-int conveyorSpeed = 50;         // Dynamic speed (0 to 255)
+int conveyorSpeed = 55;         // Dynamic speed (55 to 65)
 bool isConveyorRunning = false;  // Tracks running state for speed updates (forward)
 bool isConveyorReversing = false; // Tracks running state for speed updates (reverse)
 
@@ -91,6 +91,12 @@ void conveyorStart()
 
   // Attach IN1 to PWM and write speed
   ledcAttachPin(CONVEYOR_IN1, CONVEYOR_CH);
+  
+  // Startup torque boost to overcome static friction
+  if (conveyorSpeed < 80) {
+    ledcWrite(CONVEYOR_CH, 150);
+    delay(150);
+  }
   ledcWrite(CONVEYOR_CH, conveyorSpeed);
 
   Serial.println("Conveyor Started");
@@ -126,6 +132,12 @@ void conveyorReverse()
 
   // Attach IN2 to PWM and write speed
   ledcAttachPin(CONVEYOR_IN2, CONVEYOR_CH);
+  
+  // Startup torque boost to overcome static friction
+  if (conveyorSpeed < 80) {
+    ledcWrite(CONVEYOR_CH, 150);
+    delay(150);
+  }
   ledcWrite(CONVEYOR_CH, conveyorSpeed);
 
   Serial.println("Conveyor Reversed");
@@ -263,7 +275,7 @@ void setup()
     if (server.hasArg("value"))
     {
       conveyorSpeed = server.arg("value").toInt();
-      conveyorSpeed = constrain(conveyorSpeed, 0, 255);
+      conveyorSpeed = constrain(conveyorSpeed, 55, 65);
       if (isConveyorRunning || isConveyorReversing)
       {
         ledcWrite(CONVEYOR_CH, conveyorSpeed);
