@@ -49,3 +49,23 @@
 - [ ] Finalize UI Dashboard sections (Home, Dashboard, History)
 - [ ] Live AI testing with physical fruits on conveyor (requires static white background)
 - [ ] Stability and edge-case testing
+
+## Milestone 6: ESP32 Firmware Debugging & Stability (Added 2026-06-21)
+### Problem Analysis & Root Causes
+- **Robotic Arm "Dancing"** (Confidence: High): Caused by a combination of a small joystick deadzone (`200`) and the relative incremental target update logic (`target += displacement`). Any small ADC noise that escapes the deadzone accumulates, causing continuous drift. Floating pins from incorrect physical mapping exacerbated this.
+- **Joystick Mapping Reversed** (Confidence: High): ADC pin mapping in firmware did not match the physical wiring. (Fixed in previous session by swapping pins 33 and 35).
+- **Toggle Mode Instability** (Confidence: Medium): When switching to physical mode, the sudden application of joystick displacement to the current target causes jumps.
+- **Website Interference** (Confidence: High): Need to verify that `handlePhysicalJoysticks()` completely overrides or blocks `/move` HTTP requests to prevent conflicting target updates.
+
+### List of Firmware Bugs Identified
+1. **[Critical]** ADC Floating/Noise Accumulation: `target += displacement` continuously adds noise if joystick doesn't rest exactly within the `2048 +/- 200` deadzone.
+2. **[High]** Incorrect Joystick Pin Mapping: Physical pins did not match Left(Base/Shoulder) and Right(Elbow/Claw). (Mitigated)
+3. **[Medium]** Lack of ADC Debugging: No visibility into actual resting ADC values to calibrate the deadzone.
+4. **[Medium]** Potential Web/Physical Collision: If the website sends `/move` while physical mode is active, targets might conflict.
+
+### Files to Modify
+- `iot-ai-wifi-test-main/esp32-firmware/esp32-firmware.ino`:
+  - Needs ADC debugging serial prints.
+  - Needs dynamic or larger deadzone (e.g., `300` or `400`).
+  - Add a check in HTTP `/move` handler to reject requests if `physicalControl` is active.
+  - Re-evaluate incremental `target += displacement` vs absolute mapped values based on the physical joystick behavior.

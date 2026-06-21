@@ -15,3 +15,6 @@ exported_models/
 .DS_Store
 
 /init-e-version
+# Frontend
+argobot-app/node_modules/
+argobot-app/dist/
