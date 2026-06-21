@@ -542,4 +542,325 @@ input:checked + .slider:before {
     box-shadow: 0 8px 32px 0 rgba(245, 158, 11, 0.15);
 }
 
+/* =====================================================
+   Tabs Layout & Navigation (Relocated inside Header)
+   ===================================================== */
+.tabs-container {
+    display: flex;
+    gap: 8px;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.05));
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+}
+
+/* Tab Contents Toggle */
+.tab-content {
+    display: none;
+    flex: 1;
+    gap: 20px;
+    width: 100%;
+}
+
+.tab-content.active {
+    display: flex;
+}
+
+/* Robotic Arm Tab Layout with Custom Scrollbar */
+#arm-tab {
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: calc(100vh - 165px);
+    gap: 20px;
+    padding-right: 8px;
+}
+
+/* Styled Scrollbar matching theme */
+#arm-tab::-webkit-scrollbar {
+    width: 8px;
+}
+
+#arm-tab::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+}
+
+#arm-tab::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+#arm-tab::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-blue);
+    box-shadow: 0 0 8px var(--accent-blue-glow);
+}
+
+/* Joysticks Row Layout */
+.joysticks-row {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .joysticks-row {
+        flex-direction: column;
+    }
+}
+
+/* =====================================================
+   Conveyor Panel Layout & Animations
+   ===================================================== */
+#conveyor-tab {
+    justify-content: center;
+}
+
+.conveyor-panel {
+    max-width: 550px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin: 0 auto;
+    justify-content: space-between;
+}
+
+/* Conveyor Visualizer */
+.conveyor-visualization {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    margin: 10px 0;
+}
+
+.conveyor-belt-track {
+    width: 100%;
+    height: 48px;
+    background: #151824;
+    border: 4px solid #252a3d;
+    border-radius: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.6);
+}
+
+.conveyor-belt-surface {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 200%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    color: #475569;
+    font-size: 1.5rem;
+    user-select: none;
+    pointer-events: none;
+    transition: color 0.5s ease;
+}
+
+/* Scroll Animations */
+@keyframes scroll-forward {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@keyframes scroll-reverse {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+}
+
+/* Interchanged so that moving-forward translates left-to-right (scroll-reverse) */
+.conveyor-belt-surface.moving-forward {
+    animation: scroll-reverse 2.5s linear infinite;
+    color: var(--accent-green);
+    text-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+}
+
+/* Interchanged so that moving-reverse translates right-to-left (scroll-forward) */
+.conveyor-belt-surface.moving-reverse {
+    animation: scroll-forward 2.5s linear infinite;
+    color: #f59e0b;
+    text-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+}
+
+.conveyor-arrow {
+    font-weight: bold;
+}
+
+.conveyor-status-light-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-light-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.conveyor-status-light {
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.conveyor-status-light.stopped {
+    color: var(--accent-red);
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.25);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+}
+
+.conveyor-status-light.forward {
+    color: var(--accent-green);
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.25);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+}
+
+.conveyor-status-light.reverse {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.25);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+}
+
+/* Conveyor Control Buttons Grid */
+.conveyor-controls-row {
+    display: flex;
+    gap: 16px;
+}
+
+.conveyor-btn {
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.conveyor-btn.start-btn {
+    background: linear-gradient(135deg, var(--accent-green), #059669);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+}
+.conveyor-btn.start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+}
+.conveyor-btn.start-btn:active { transform: translateY(0); }
+
+.conveyor-btn.stop-btn {
+    background: linear-gradient(135deg, var(--accent-red), #dc2626);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+}
+.conveyor-btn.stop-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+}
+.conveyor-btn.stop-btn:active { transform: translateY(0); }
+
+.conveyor-btn.reverse-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25);
+}
+.conveyor-btn.reverse-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+}
+.conveyor-btn.reverse-btn:active { transform: translateY(0); }
+
+/* Conveyor Speed Controls */
+.conveyor-speed-config {
+    margin-top: 5px;
+}
+
+.speed-input-container {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.speed-input-container input[type=number] {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s ease;
+    font-family: monospace;
+}
+
+.speed-input-container input[type=number]:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px var(--accent-blue-glow);
+}
+
+/* Remove spin arrows from input number */
+.speed-input-container input[type=number]::-webkit-inner-spin-button, 
+.speed-input-container input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}
+.speed-input-container input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.speed-set-btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+
 

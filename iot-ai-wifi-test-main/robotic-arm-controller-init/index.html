@@ -19,9 +19,15 @@
                 <span class="subtitle">Robotic Arm Interface</span>
             </div>
             
+            <!-- Tabs Selector -->
+            <div class="tabs-container">
+                <button class="tab-btn active" data-tab="arm-tab">🦾 Robotic Arm</button>
+                <button class="tab-btn" data-tab="conveyor-tab">⚙️ Conveyor Belt</button>
+            </div>
+            
             <!-- Connection Config -->
             <div class="connection-config">
-                <input type="text" id="esp-ip" value="192.168.1.100" placeholder="ESP32 IP">
+                <input type="text" id="esp-ip" value="192.168.4.1" placeholder="ESP32 IP">
                 <div class="status-indicator" id="status-indicator">
                     <span class="status-dot"></span>
                     <span class="status-text" id="status-text">Disconnected</span>
@@ -31,96 +37,148 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Left Panel: Base & Shoulder Joystick -->
-            <div class="joystick-panel left-panel">
-                <div class="panel-header">
-                    <h2>Base & Shoulder</h2>
-                    <span class="axis-hint">X: Base | Y: Shoulder</span>
-                </div>
-                <div id="joystick-left" class="joystick-container"></div>
-                
-                <div class="manual-controls">
-                    <div class="control-group">
-                        <div class="control-header">
-                            <label>Base</label>
-                            <span id="base-val">90°</span>
+            <!-- Tab 1: Robotic Arm Controls -->
+            <div id="arm-tab" class="tab-content active">
+                <div class="joysticks-row">
+                    <!-- Left Panel: Base & Shoulder Joystick -->
+                    <div class="joystick-panel left-panel">
+                        <div class="panel-header">
+                            <h2>Base & Shoulder</h2>
+                            <span class="axis-hint">X: Base | Y: Shoulder</span>
                         </div>
-                        <input type="range" id="slider-base" min="0" max="180" value="90">
+                        <div id="joystick-left" class="joystick-container"></div>
+                        
+                        <div class="manual-controls">
+                            <div class="control-group">
+                                <div class="control-header">
+                                    <label>Base</label>
+                                    <span id="base-val">90°</span>
+                                </div>
+                                <input type="range" id="slider-base" min="0" max="180" value="90">
+                            </div>
+                            <div class="control-group">
+                                <div class="control-header">
+                                    <label>Shoulder</label>
+                                    <span id="shoulder-val">90°</span>
+                                </div>
+                                <input type="range" id="slider-shoulder" min="0" max="180" value="90">
+                            </div>
+                        </div>
                     </div>
-                    <div class="control-group">
-                        <div class="control-header">
-                            <label>Shoulder</label>
-                            <span id="shoulder-val">90°</span>
+
+                    <!-- Right Panel: Elbow & Claw Joystick -->
+                    <div class="joystick-panel right-panel">
+                        <div class="panel-header">
+                            <h2>Elbow & Claw</h2>
+                            <span class="axis-hint">X: Claw | Y: Elbow</span>
                         </div>
-                        <input type="range" id="slider-shoulder" min="0" max="180" value="90">
+                        <div id="joystick-right" class="joystick-container"></div>
+
+                        <div class="manual-controls">
+                            <div class="control-group">
+                                <div class="control-header">
+                                    <label>Elbow</label>
+                                    <span id="elbow-val">90°</span>
+                                </div>
+                                <input type="range" id="slider-elbow" min="0" max="180" value="90">
+                            </div>
+                            <div class="control-group">
+                                <div class="control-header">
+                                    <label>Claw</label>
+                                    <span id="claw-val">90°</span>
+                                </div>
+                                <input type="range" id="slider-claw" min="0" max="180" value="90">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer / Global Controls (Now Arm Tab Specific) -->
+                <footer class="dashboard-footer">
+                    <button id="btn-reset" class="btn primary-btn">↺ Reset</button>
+                    <div class="footer-memory-group">
+                        <button id="btn-save-action" class="btn secondary-btn">💾 Save <kbd>Q</kbd></button>
+                        <button id="btn-run-actions" class="btn primary-btn">▶ Play <kbd>T</kbd></button>
+                        <button id="btn-clear-actions" class="btn secondary-btn">🗑 Clear <kbd>R</kbd></button>
+                        <span id="memory-count" class="memory-count-badge">0 saved</span>
+                    </div>
+                    <div class="toggle-container">
+                        <label class="switch">
+                            <input type="checkbox" id="mode-toggle" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="mode-label" id="mode-label">Website Control</span>
+                    </div>
+                </footer>
+
+                <!-- Keyboard Helper Legend (Now Arm Tab Specific) -->
+                <div class="keyboard-helper">
+                    <div class="helper-col">
+                        <span class="col-title">Base &amp; Shoulder</span>
+                        <span><b>W / S</b> Shoulder ↑↓</span>
+                        <span><b>A / D</b> Base ←→</span>
+                    </div>
+                    <div class="helper-col">
+                        <span class="col-title">Elbow &amp; Claw</span>
+                        <span><b>↑ / ↓</b> Elbow ↑↓</span>
+                        <span><b>← / →</b> Claw open/close</span>
+                    </div>
+                    <div class="helper-col memory-col">
+                        <span class="col-title">Memory</span>
+                        <span><b>Q</b> Save position</span>
+                        <span><b>T</b> Replay all</span>
+                        <span><b>R</b> Clear buffer</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Panel: Elbow & Claw Joystick -->
-            <div class="joystick-panel right-panel">
-                <div class="panel-header">
-                    <h2>Elbow & Claw</h2>
-                    <span class="axis-hint">X: Claw | Y: Elbow</span>
-                </div>
-                <div id="joystick-right" class="joystick-container"></div>
-
-                <div class="manual-controls">
-                    <div class="control-group">
-                        <div class="control-header">
-                            <label>Elbow</label>
-                            <span id="elbow-val">90°</span>
-                        </div>
-                        <input type="range" id="slider-elbow" min="0" max="180" value="90">
+            <!-- Tab 2: Conveyor Belt Controls -->
+            <div id="conveyor-tab" class="tab-content">
+                <div class="joystick-panel conveyor-panel">
+                    <div class="panel-header">
+                        <h2>Conveyor Control</h2>
+                        <span class="axis-hint">Operational Controls &amp; Speed Config</span>
                     </div>
-                    <div class="control-group">
-                        <div class="control-header">
-                            <label>Claw</label>
-                            <span id="claw-val">90°</span>
+                    
+                    <!-- Conveyor Belt Animation Visualizer -->
+                    <div class="conveyor-visualization">
+                        <div class="conveyor-belt-track">
+                            <div class="conveyor-belt-surface" id="conveyor-surface">
+                                <span class="conveyor-arrow">➔</span>
+                                <span class="conveyor-arrow">➔</span>
+                                <span class="conveyor-arrow">➔</span>
+                                <span class="conveyor-arrow">➔</span>
+                                <span class="conveyor-arrow">➔</span>
+                            </div>
                         </div>
-                        <input type="range" id="slider-claw" min="0" max="180" value="90">
+                        <div class="conveyor-status-light-bar">
+                            <span class="status-light-label">Status:</span>
+                            <span class="conveyor-status-light" id="conveyor-status-light">Stopped</span>
+                        </div>
+                    </div>
+
+                    <!-- Conveyor Action Controls -->
+                    <div class="conveyor-controls-row">
+                        <button id="btn-conveyor-start" class="btn conveyor-btn start-btn">▶ Start</button>
+                        <button id="btn-conveyor-stop" class="btn conveyor-btn stop-btn">⏸ Stop</button>
+                        <button id="btn-conveyor-reverse" class="btn conveyor-btn reverse-btn">◀ Reverse</button>
+                    </div>
+
+                    <!-- Conveyor Speed Configuration -->
+                    <div class="conveyor-speed-config">
+                        <div class="control-group">
+                            <div class="control-header">
+                                <label for="input-conveyor-speed">Conveyor Speed (0 - 255)</label>
+                                <span id="conveyor-speed-val">50</span>
+                            </div>
+                            <div class="speed-input-container">
+                                <input type="number" id="input-conveyor-speed" min="0" max="255" value="50" placeholder="Speed (0-255)">
+                                <button id="btn-conveyor-speed-set" class="btn primary-btn speed-set-btn">Set</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Footer / Global Controls -->
-        <footer class="dashboard-footer">
-            <button id="btn-reset" class="btn primary-btn">↺ Reset</button>
-            <div class="footer-memory-group">
-                <button id="btn-save-action" class="btn secondary-btn">💾 Save <kbd>Q</kbd></button>
-                <button id="btn-run-actions" class="btn primary-btn">▶ Play <kbd>T</kbd></button>
-                <button id="btn-clear-actions" class="btn secondary-btn">🗑 Clear <kbd>R</kbd></button>
-                <span id="memory-count" class="memory-count-badge">0 saved</span>
-            </div>
-            <div class="toggle-container">
-                <label class="switch">
-                    <input type="checkbox" id="mode-toggle" checked>
-                    <span class="slider round"></span>
-                </label>
-                <span class="mode-label" id="mode-label">Website Control</span>
-            </div>
-        </footer>
-
-        <!-- Keyboard Helper Legend -->
-        <div class="keyboard-helper">
-            <div class="helper-col">
-                <span class="col-title">Base &amp; Shoulder</span>
-                <span><b>W / S</b> Shoulder ↑↓</span>
-                <span><b>A / D</b> Base ←→</span>
-            </div>
-            <div class="helper-col">
-                <span class="col-title">Elbow &amp; Claw</span>
-                <span><b>↑ / ↓</b> Elbow ↑↓</span>
-                <span><b>← / →</b> Claw open/close</span>
-            </div>
-            <div class="helper-col memory-col">
-                <span class="col-title">Memory</span>
-                <span><b>Q</b> Save position</span>
-                <span><b>T</b> Replay all</span>
-                <span><b>R</b> Clear buffer</span>
-            </div>
-        </div>
     </div>
 
     <!-- Toast Notifications Container -->

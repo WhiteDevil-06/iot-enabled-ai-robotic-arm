@@ -2,7 +2,7 @@ import { throttle } from './utils.js';
 
 class CommsAgent {
     constructor() {
-        this.ip = '192.168.1.100';
+        this.ip = '192.168.4.1';
         this.isConnected = false;
         this.statusEl = document.getElementById('status-indicator');
         this.statusTextEl = document.getElementById('status-text');

@@ -7,10 +7,12 @@
    - `Q`: Save current servo coordinates.
    - `T`: Sequentially run saved actions with an 800ms delay between steps.
    - `R`: Reset memory buffer.
-4. **UI Dashboard**: Sleek dark-mode glassmorphism styling with a live status indicator and a new keyboard shortcut helper panel.
-5. **ESP32 Firmware**: The Arduino code for the ESP32 AP and PWM server has been successfully integrated into the repository (`esp32-firmware/esp32-firmware.ino`).
+4. **UI Dashboard & Tabbed Controls**: Sleek dark-mode glassmorphism styling with tabs separating **Robotic Arm** and **Conveyor Belt** controls. Includes live status indicators and shortcut helpers.
+5. **Conveyor Belt Controls**: Fully integrated Start, Stop, and Reverse commands in the frontend UI with a custom-animated scrolling conveyor visualizer, status indicators, and dynamic speed (PWM 0-255) control.
+6. **ESP32 Firmware**: Complete Arduino/ESP32 AP and PWM server codebase integrated in the repository (`esp32-firmware/esp32-firmware.ino`), supporting `/move`, `/status`, `/setMode`, and conveyor commands (`/conveyor/start`, `/conveyor/stop`, `/conveyor/reverse`, `/conveyor/speed?value=<val>`).
 
 ## What is to be done NEXT
-1. **Backend AI Integration**: The Flask/FastAPI backend needs to be connected so that when a physical fruit passes the webcam, the laptop CNN outputs the prediction and fires the identical `/move` command.
+1. **Backend AI Integration**: Connect the Flask/FastAPI backend so that when a physical fruit passes the webcam, the laptop CNN outputs the prediction and fires the identical `/move` command.
+2. **Conveyor-AI Integration**: Sync the conveyor belt control with the OpenCV background-subtraction classifier (e.g., auto-pausing the belt during classification and resuming after sorting is complete).
 3. **Physical Hardware Testing**: Test the Action Memory system connected to the physical arm to ensure the 800ms step delay is sufficient for the real servos to reach their targets without burning out.
-4. **Conveyor Control**: Introduce logic to pause the conveyor belt during prediction and resume after the sorting action is complete.
+

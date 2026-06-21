@@ -4,7 +4,7 @@ Real-Time Fruit Classifier & Robotic Arm Sorting Trigger
 Uses OpenCV to detect foreground objects (fruits) using background subtraction,
 runs predictions on the cropped object region using a pure NumPy CNN implementation,
 draws a bounding box, rejects unknown objects below a confidence threshold,
-and triggers the robotic arm to sort.
+and triggers the robotic arm/conveyor.
 """
 
 import os
@@ -23,15 +23,9 @@ DEFAULT_MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mo
 DEFAULT_CLASSES_FILE = os.path.join(DEFAULT_MODEL_DIR, "class_names.json")
 DEFAULT_IMG_SIZE = (128, 128)
 DEFAULT_CONFIDENCE_THRESHOLD = 0.85
-DEFAULT_COOLDOWN_SECONDS = 5.0
+DEFAULT_COOLDOWN_SECONDS = 3.0
 DEFAULT_ESP32_IP = "192.168.4.1"
 DEFAULT_MIN_AREA = 1500  # Minimum pixel area to consider an object a fruit
-
-# Sorting angles matching Section 10 of training notebook
-ARM_SORTING_ANGLES = {
-    "fresh": {"base": 120, "shoulder": 90, "elbow": 45, "claw": 10},
-    "rotten": {"base": 60, "shoulder": 90, "elbow": 45, "claw": 10}
-}
 
 class FruitClassifierApp:
     def __init__(self, args):
@@ -227,14 +221,15 @@ class FruitClassifierApp:
         return start_x, start_y, crop_size
 
     def trigger_sorting_arm(self, label):
-        """Dispatches an HTTP GET request to the ESP32 server to move the robotic arm."""
+        """Dispatches HTTP GET requests to the ESP32 server to stop conveyor, wait 3s, and start it."""
         current_time = time.time()
         elapsed = current_time - self.last_triggered_time
         
         # Cooldown check
         if elapsed < self.args.cooldown:
+            print(f"[DEBUG] Cooldown active: {self.args.cooldown - elapsed:.1f}s remaining. Skipping trigger.")
             return False, f"Cooldown active ({self.args.cooldown - elapsed:.1f}s remaining)"
-            
+
         # Determine movement category
         category = None
         if "fresh" in label.lower():
@@ -243,30 +238,50 @@ class FruitClassifierApp:
             category = "rotten"
             
         if not category:
+            print(f"[DEBUG] Unknown class type '{label}' - no conveyor action defined.")
             return False, f"Unknown class type '{label}' - no action defined."
             
-        angles = ARM_SORTING_ANGLES[category]
-        url = f"http://{self.args.esp32_ip}/move?base={angles['base']}&shoulder={angles['shoulder']}&elbow={angles['elbow']}&claw={angles['claw']}"
-        
         self.last_triggered_time = current_time
         
+        stop_url = f"http://{self.args.esp32_ip}/conveyor/stop"
+        start_url = f"http://{self.args.esp32_ip}/conveyor/start"
+        
         if self.simulation_mode:
-            print(f"[SIMULATION] Target Class: {label} ({category.upper()})")
-            print(f"   -> Sent move command: {url}")
+            print(f"\n[SIMULATION] Detection: {label} ({category.upper()})")
+            print(f"   -> [SIMULATION] Stopping Conveyor (GET {stop_url})")
+            print("   -> [SIMULATION] Conveyor Stopped. Waiting 3 seconds...")
+            time.sleep(3)
+            print(f"   -> [SIMULATION] Restarting Conveyor (GET {start_url})")
             return True, "Triggered Sort (Simulation)"
-        else:
-            print(f"[ESP32] Sending movement command to {self.args.esp32_ip}...")
-            try:
-                response = requests.get(url, timeout=1.5)
-                if response.status_code == 200:
-                    print(f"   [OK] ESP32 Response: {response.text.strip()}")
-                    return True, "Triggered Sort (Sent to ESP32)"
-                else:
-                    print(f"   [WARN] ESP32 returned code {response.status_code}")
-                    return False, f"ESP32 HTTP Code {response.status_code}"
-            except requests.exceptions.RequestException as e:
-                print(f"   [ERROR] Network Error communicating with ESP32: {e}")
-                return False, "ESP32 Offline/Connection Refused"
+            
+        try:
+            print(f"\n[DEBUG] trigger_sorting_arm() invoked for class: '{label}'")
+            print(f"[DEBUG] Sending stop request: GET {stop_url}")
+            response = requests.get(stop_url, timeout=2)
+            print(f"[DEBUG] Stop Response: Code={response.status_code}, Content='{response.text.strip()}'")
+
+            if response.status_code != 200:
+                print("[DEBUG] Conveyor stop failed (status code is not 200)")
+                return False, "Failed to Stop Conveyor"
+
+            print("[DEBUG] Conveyor Stopped successfully. Sleeping for 3 seconds...")
+            time.sleep(3)
+
+            print(f"[DEBUG] Sending start request: GET {start_url}")
+            response = requests.get(start_url, timeout=2)
+            print(f"[DEBUG] Start Response: Code={response.status_code}, Content='{response.text.strip()}'")
+
+            if response.status_code != 200:
+                print("[DEBUG] Conveyor start failed (status code is not 200)")
+                return False, "Failed to Start Conveyor"
+
+            print("[DEBUG] Conveyor restarted successfully")
+            return True, "Detection Test Successful"
+
+        except requests.exceptions.RequestException as e:
+            print(f"[DEBUG] ESP32 Communication Error: {e}")
+
+        return False, "ESP32 Offline"
 
     def run(self):
         """Primary camera acquisition and prediction loop."""
@@ -408,10 +423,14 @@ class FruitClassifierApp:
                     object_detected = True
                     ox, oy, ow, oh = cv2.boundingRect(best_contour)
                     object_box = (start_x + ox, start_y + oy, ow, oh)
+                elif len(contours) > 0:
+                    largest_overall = max([cv2.contourArea(c) for c in contours])
+                    print(f"[DEBUG] No valid contour selected. Total contours={len(contours)}, largest area={int(largest_overall)} px (min required: {self.args.min_area})")
             
             # If an object is detected, run the CNN model
             if object_detected and object_box is not None:
                 bx, by, bw, bh = object_box
+                print(f"[DEBUG] Foreground object detected at x={bx}, y={by}, w={bw}, h={bh} | Area={int(max_area)} px")
                 
                 # Crop ONLY the object region from the frame
                 # This excludes the background curtains entirely from the image sent to the model!
@@ -419,10 +438,12 @@ class FruitClassifierApp:
                 
                 if object_crop.size > 0:
                     preprocessed = self.preprocess_image(object_crop)
+                    print(f"[DEBUG] Running NumPy CNN model inference on cropped object patch...")
                     class_idx, confidence = self.predict(preprocessed)
                     label = self.class_names[class_idx]
                     
                     is_rotten = "rotten" in label.lower()
+                    print(f"[DEBUG] Inference Result: Class='{label}', Confidence={confidence*100:.1f}%, Required Threshold={self.args.threshold*100:.1f}%")
                     
                     # Out-of-Distribution Rejection: Check if confidence is below threshold
                     if confidence >= self.args.threshold:
@@ -430,13 +451,13 @@ class FruitClassifierApp:
                         label_text = f"{label} ({confidence*100:.1f}%)"
                         box_color = (0, 0, 255) if is_rotten else (0, 255, 0)  # Red for Rotten, Green for Fresh
                         
-                        # Auto-trigger robotic arm coordinates
+                        # Auto-trigger conveyor sorting workflow
                         triggered, msg = self.trigger_sorting_arm(label)
                         if triggered:
                             last_status = f"Sort Active: {label}"
                             status_color = (255, 100, 0)
                             
-                            # Flush camera frame buffer to clear stale frames accumulated during sleep/cooldown
+                            # Flush camera frame buffer to clear stale frames accumulated during sleep(3)
                             print("[DEBUG] Flushing camera buffer to remove stale frames...")
                             for _ in range(15):
                                 cap.read()
@@ -445,6 +466,7 @@ class FruitClassifierApp:
                             status_color = (0, 0, 255)
                     else:
                         # Unknown/Unrecognized Object (Low Confidence classification)
+                        print(f"[DEBUG] Inference rejected: Confidence ({confidence:.2f}) is below threshold ({self.args.threshold:.2f})")
                         label_text = f"Unknown Object ({label} {confidence*100:.1f}%)"
                         box_color = (128, 128, 128)  # Gray bounding box indicates unrecognized
                         last_status = "Unrecognized Object - Sorting Ignored"

@@ -33,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPlay:    document.getElementById('btn-run-actions'),
         btnClear:   document.getElementById('btn-clear-actions'),
         memCount:   document.getElementById('memory-count'),
+        conveyorSpeedVal: document.getElementById('conveyor-speed-val'),
+        conveyorSpeedInput: document.getElementById('input-conveyor-speed'),
     };
 
     // ─── Toast Notification Helper ───────────────────────────────────────────
@@ -204,6 +206,117 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ─── Tab Switching Logic ────────────────────────────────────────────────
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTab = btn.getAttribute('data-tab');
+
+            // Remove active classes
+            tabButtons.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+
+            // Add active class to selected tab button and content
+            btn.classList.add('active');
+            const targetEl = document.getElementById(targetTab);
+            if (targetEl) {
+                targetEl.classList.add('active');
+            }
+        });
+    });
+
+    // ─── Conveyor Control Logic ─────────────────────────────────────────────
+    function updateConveyorUIState(conveyorState) {
+        const surface = document.getElementById('conveyor-surface');
+        const light = document.getElementById('conveyor-status-light');
+        if (!surface || !light) return;
+
+        surface.classList.remove('moving-forward', 'moving-reverse');
+        light.classList.remove('stopped', 'forward', 'reverse');
+
+        if (conveyorState === 'started') {
+            surface.classList.add('moving-forward');
+            light.textContent = 'Running';
+            light.classList.add('forward');
+        } else if (conveyorState === 'reversed') {
+            surface.classList.add('moving-reverse');
+            light.textContent = 'Reversing';
+            light.classList.add('reverse');
+        } else {
+            light.textContent = 'Stopped';
+            light.classList.add('stopped');
+        }
+    }
+
+    async function sendConveyorAction(action) {
+        if (!commsAgent.ip) {
+            showToast("Please enter an ESP32 IP first", "warning");
+            return;
+        }
+
+        const url = `http://${commsAgent.ip}/conveyor/${action}`;
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                showToast(`Conveyor: ${action.toUpperCase()}`, "success");
+                updateConveyorUIState(action === 'start' ? 'started' : (action === 'reverse' ? 'reversed' : 'stopped'));
+            } else {
+                showToast(`Failed to execute conveyor action: ${action}`, "warning");
+            }
+        } catch (err) {
+            showToast("Error connecting to ESP32", "warning");
+            console.error("Conveyor action error:", err);
+        }
+    }
+
+    async function setConveyorSpeed(value) {
+        if (!commsAgent.ip) {
+            showToast("Please enter an ESP32 IP first", "warning");
+            return;
+        }
+
+        const speed = parseInt(value, 10);
+        if (isNaN(speed) || speed < 0 || speed > 255) {
+            showToast("Speed must be between 0 and 255", "warning");
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://${commsAgent.ip}/conveyor/speed?value=${speed}`);
+            if (response.ok) {
+                const text = await response.text();
+                if (els.conveyorSpeedVal) els.conveyorSpeedVal.textContent = text;
+                if (els.conveyorSpeedInput) els.conveyorSpeedInput.value = text;
+                showToast(`Conveyor speed set to ${text}`, "success");
+            } else {
+                showToast("Failed to set conveyor speed", "warning");
+            }
+        } catch (err) {
+            showToast("Error connecting to ESP32", "warning");
+            console.error("Conveyor speed error:", err);
+        }
+    }
+
+    const startBtn = document.getElementById('btn-conveyor-start');
+    const stopBtn = document.getElementById('btn-conveyor-stop');
+    const reverseBtn = document.getElementById('btn-conveyor-reverse');
+    const speedSetBtn = document.getElementById('btn-conveyor-speed-set');
+
+    if (startBtn) startBtn.addEventListener('click', () => sendConveyorAction('start'));
+    if (stopBtn) stopBtn.addEventListener('click', () => sendConveyorAction('stop'));
+    if (reverseBtn) reverseBtn.addEventListener('click', () => sendConveyorAction('reverse'));
+
+    if (speedSetBtn && els.conveyorSpeedInput) {
+        speedSetBtn.addEventListener('click', () => setConveyorSpeed(els.conveyorSpeedInput.value));
+        els.conveyorSpeedInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                setConveyorSpeed(els.conveyorSpeedInput.value);
+            }
+        });
+    }
+
     // ─── ESP32 Status and State Synchronization Polling ─────────────────────
     let statusInterval = null;
 
@@ -223,6 +336,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (els.modeToggle && els.modeToggle.checked !== espWebMode) {
                         els.modeToggle.checked = espWebMode;
                         updateManualModeState(true); // Programmatic sync
+                    }
+
+                    // Sync conveyor speed if returned in status payload
+                    if (data.speed !== undefined) {
+                        if (els.conveyorSpeedVal) els.conveyorSpeedVal.textContent = data.speed;
+                        if (els.conveyorSpeedInput && document.activeElement !== els.conveyorSpeedInput) {
+                            els.conveyorSpeedInput.value = data.speed;
+                        }
                     }
 
                     // If Physical Joystick Mode is active, sync angles from the hardware
