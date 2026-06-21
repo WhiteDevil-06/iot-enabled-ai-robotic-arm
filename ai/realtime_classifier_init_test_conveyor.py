@@ -31,6 +31,7 @@ class FruitClassifierApp:
         self.args = args
         self.model_type = None
         self.class_names = []
+        self.simulation_mode = args.sim
         
         # State machine variables
         self.state = "READY"  # READY, STOPPING, STOPPED, STARTING, CLEARING
@@ -161,14 +162,19 @@ class FruitClassifierApp:
         return np.tensordot(x_patches, w, axes=((2, 3, 4), (0, 1, 2))) + b
 
     def maxpool2d_numpy(self, x, pool_size=(2, 2)):
-        """2D MaxPooling with pool size 2x2 and stride 2."""
+        """2D MaxPooling with pool size 2x2 and stride 2 using numpy strides."""
         h_in, w_in, c = x.shape
         ph, pw = pool_size
         h_out = h_in // ph
         w_out = w_in // pw
         
-        x_reshaped = x[:h_out*ph, :w_out*pw].reshape(h_out, ph, w_out, pw, c)
-        return x_reshaped.max(axis=(1, 3))
+        from numpy.lib.stride_tricks import as_strided
+        s_h, s_w, s_c = x.strides
+        x_patches = as_strided(x, 
+                               shape=(h_out, w_out, ph, pw, c), 
+                               strides=(ph * s_h, pw * s_w, s_h, s_w, s_c))
+        return x_patches.max(axis=(2, 3))
+
 
     def preprocess_image(self, img):
         """Preprocesses a raw BGR image patch for the CNN."""
@@ -332,11 +338,12 @@ class FruitClassifierApp:
             if not self.calibrating and self.bg_gray is not None:
                 # Compute absolute difference
                 diff = cv2.absdiff(self.bg_gray, gray_crop)
-                _, thresh = cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)
+                _, thresh = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
                 
-                # Dilate to clean up holes
+                # Morphological Opening (remove noise) and Closing (fill holes)
                 kernel = np.ones((5, 5), np.uint8)
-                thresh = cv2.dilate(thresh, kernel, iterations=1)
+                thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+                thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
                 
                 # Find contours
                 contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -346,10 +353,13 @@ class FruitClassifierApp:
                 
                 for c in contours:
                     area = cv2.contourArea(c)
-                    # Filter out tiny noise and massive lighting/hand changes (max 75% of ROI)
-                    if 1500 <= area <= 16875:
-                        if area > max_area:
-                            max_area = area
+                    # Track true maximum area of any contour in the ROI (for clearing state)
+                    if area > max_area:
+                        max_area = area
+                    
+                    # Filter for valid fruits
+                    if self.args.min_area <= area <= self.args.max_area:
+                        if best_contour is None or area > cv2.contourArea(best_contour):
                             best_contour = c
                 
                 if best_contour is not None:
@@ -368,8 +378,13 @@ class FruitClassifierApp:
                 roi_color = (0, 255, 0)  # Green
                 if object_detected and object_box is not None:
                     ox, oy, ow, oh = object_box
-                    # Crop object region relative to the ROI crop
-                    object_crop = cropped_roi[oy:oy+oh, ox:ox+ow]
+                    
+                    # Centered fixed 128x128 crop around object center to preserve scale
+                    cx_obj = ox + ow // 2
+                    cy_obj = oy + oh // 2
+                    x1 = max(0, min(roi_w - 128, cx_obj - 64))
+                    y1 = max(0, min(roi_h - 128, cy_obj - 64))
+                    object_crop = cropped_roi[y1 : y1 + 128, x1 : x1 + 128]
                     
                     if object_crop.size > 0:
                         preprocessed = self.preprocess_image(object_crop)
@@ -428,12 +443,12 @@ class FruitClassifierApp:
                 elapsed_clear = time.time() - self.clear_start_time
                 label_text = "Clearing zone..."
                 
-                # Wait until the center zone has no contours AND at least 1.5s has passed
-                if elapsed_clear >= 1.5 and (not object_detected or max_area < 500):
+                # Wait until the center zone has no contours (true max_area < 500) AND at least 1.5s has passed
+                if elapsed_clear >= 1.5 and max_area < 500:
                     self.state = "READY"
                     last_status = "System Ready"
                 else:
-                    last_status = f"Clearing: {elapsed_clear:.1f}s elapsed"
+                    last_status = f"Clearing: {elapsed_clear:.1f}s elapsed | Area: {int(max_area)}"
             
             # --- UI DRAWING & RENDERING ---
             # 1. Draw 150x150 Detection ROI box
@@ -537,6 +552,10 @@ if __name__ == "__main__":
                         help="Run in simulation mode (logs coordinates to console instead of network GET).")
     parser.add_argument("--speed", type=int, default=DEFAULT_CONVEYOR_SPEED,
                         help="Conveyor calibrated target speed (55 to 65).")
+    parser.add_argument("--min-area", type=int, default=800,
+                        help="Minimum contour area to consider as fruit.")
+    parser.add_argument("--max-area", type=int, default=12000,
+                        help="Maximum contour area to consider as fruit.")
                         
     args = parser.parse_args()
     

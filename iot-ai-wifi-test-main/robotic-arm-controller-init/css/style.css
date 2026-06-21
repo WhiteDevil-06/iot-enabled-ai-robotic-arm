@@ -862,5 +862,9 @@ input:checked + .slider:before {
     font-size: 0.9rem;
 }
 
-
-
+/* Disabled controls gate for physical mode */
+.disabled-controls {
+    pointer-events: none !important;
+    opacity: 0.4 !important;
+    transition: all 0.3s ease;
+}

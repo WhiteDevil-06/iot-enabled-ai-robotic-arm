@@ -24,6 +24,14 @@ const int CONVEYOR_IN1 = 25;
 const int CONVEYOR_IN2 = 26;
 
 // =====================================================
+// Physical Analog Joystick Pins (ADC1 channels)
+// =====================================================
+const int JOY_BASE_PIN = 32;      // Left Joystick X
+const int JOY_SHOULDER_PIN = 33;  // Left Joystick Y
+const int JOY_ELBOW_PIN = 35;     // Right Joystick Y
+const int JOY_CLAW_PIN = 34;      // Right Joystick X
+
+// =====================================================
 // PWM Channels
 // =====================================================
 const int BASE_CH = 0;
@@ -46,33 +54,59 @@ const int SERVO_MAX = 8192;
 // =====================================================
 const int CONVEYOR_FREQ = 1000;
 const int CONVEYOR_RES = 8;
-int conveyorSpeed = 55;         // Dynamic speed (55 to 65)
+int conveyorSpeed = 55;         // Dynamic speed
 bool isConveyorRunning = false;  // Tracks running state for speed updates (forward)
 bool isConveyorReversing = false; // Tracks running state for speed updates (reverse)
 
-// State tracking for status API
-int baseAngle = 90;
-int shoulderAngle = 90;
-int elbowAngle = 90;
-int clawAngle = 90;
-bool webMode = true;
+// =====================================================
+// Control State Variables
+// =====================================================
+bool webMode = true; // True: website/AI control, False: physical hardware joysticks
+
+// Target positions (where the arm is commanded to go)
+float targetBase = 90.0;
+float targetShoulder = 90.0;
+float targetElbow = 90.0;
+float targetClaw = 90.0;
+
+// Current positions (for smoothing/interpolation)
+float currentBase = 90.0;
+float currentShoulder = 90.0;
+float currentElbow = 90.0;
+float currentClaw = 90.0;
+
+// Loop timing control
+unsigned long lastSmoothUpdate = 0;
+const unsigned long smoothUpdateInterval = 15; // Interpolate every 15ms
+
+unsigned long lastPhysUpdate = 0;
+const unsigned long physUpdateInterval = 20;   // Read physical joysticks every 20ms
 
 // =====================================================
-// Servo Function
+// Utility Helper Functions
 // =====================================================
-void moveServo(int channel, int angle)
-{
+float constr(float val, float minVal, float maxVal) {
+  if (val < minVal) return minVal;
+  if (val > maxVal) return maxVal;
+  return val;
+}
+
+float approach(float target, float current, float step) {
+  if (abs(target - current) < step) {
+    return target;
+  }
+  if (current < target) {
+    return current + step;
+  } else {
+    return current - step;
+  }
+}
+
+// Low-level write to LEDC PWM channel
+void writeServoAngle(int channel, int angle) {
   if (angle < 0) angle = 0;
   if (angle > 180) angle = 180;
-
-  int dutyCycle = map(
-    angle,
-    0,
-    180,
-    SERVO_MIN,
-    SERVO_MAX
-  );
-
+  int dutyCycle = map(angle, 0, 180, SERVO_MIN, SERVO_MAX);
   ledcWrite(channel, dutyCycle);
 }
 
@@ -93,7 +127,8 @@ void conveyorStart()
   ledcAttachPin(CONVEYOR_IN1, CONVEYOR_CH);
   
   // Startup torque boost to overcome static friction
-  if (conveyorSpeed < 80) {
+  // Startup torque boost to overcome static friction
+  if (conveyorSpeed > 0 && conveyorSpeed < 80) {
     ledcWrite(CONVEYOR_CH, 150);
     delay(150);
   }
@@ -134,7 +169,8 @@ void conveyorReverse()
   ledcAttachPin(CONVEYOR_IN2, CONVEYOR_CH);
   
   // Startup torque boost to overcome static friction
-  if (conveyorSpeed < 80) {
+  // Startup torque boost to overcome static friction
+  if (conveyorSpeed > 0 && conveyorSpeed < 80) {
     ledcWrite(CONVEYOR_CH, 150);
     delay(150);
   }
@@ -170,10 +206,10 @@ void setup()
   // -------------------------------------------------
   // Center Servos
   // -------------------------------------------------
-  moveServo(BASE_CH, baseAngle);
-  moveServo(SHOULDER_CH, shoulderAngle);
-  moveServo(ELBOW_CH, elbowAngle);
-  moveServo(CLAW_CH, clawAngle);
+  writeServoAngle(BASE_CH, 90);
+  writeServoAngle(SHOULDER_CH, 90);
+  writeServoAngle(ELBOW_CH, 90);
+  writeServoAngle(CLAW_CH, 90);
 
   // -------------------------------------------------
   // Conveyor Setup
@@ -189,6 +225,14 @@ void setup()
   digitalWrite(CONVEYOR_IN2, LOW);
 
   conveyorStop();
+
+  // -------------------------------------------------
+  // Setup Physical Joystick Pins
+  // -------------------------------------------------
+  pinMode(JOY_BASE_PIN, INPUT);
+  pinMode(JOY_SHOULDER_PIN, INPUT);
+  pinMode(JOY_ELBOW_PIN, INPUT);
+  pinMode(JOY_CLAW_PIN, INPUT);
 
   // -------------------------------------------------
   // Start WiFi AP
@@ -209,28 +253,27 @@ void setup()
   {
     server.sendHeader("Access-Control-Allow-Origin", "*");
 
-    if (server.hasArg("base"))
-    {
-      baseAngle = server.arg("base").toInt();
-      moveServo(BASE_CH, baseAngle);
-    }
+    // Only accept movement payloads when website/AI control is active
+    if (webMode) {
+      if (server.hasArg("base"))
+      {
+        targetBase = server.arg("base").toFloat();
+      }
 
-    if (server.hasArg("shoulder"))
-    {
-      shoulderAngle = server.arg("shoulder").toInt();
-      moveServo(SHOULDER_CH, shoulderAngle);
-    }
+      if (server.hasArg("shoulder"))
+      {
+        targetShoulder = server.arg("shoulder").toFloat();
+      }
 
-    if (server.hasArg("elbow"))
-    {
-      elbowAngle = server.arg("elbow").toInt();
-      moveServo(ELBOW_CH, elbowAngle);
-    }
+      if (server.hasArg("elbow"))
+      {
+        targetElbow = server.arg("elbow").toFloat();
+      }
 
-    if (server.hasArg("claw"))
-    {
-      clawAngle = server.arg("claw").toInt();
-      moveServo(CLAW_CH, clawAngle);
+      if (server.hasArg("claw"))
+      {
+        targetClaw = server.arg("claw").toFloat();
+      }
     }
 
     server.send(200, "text/plain", "OK");
@@ -275,7 +318,7 @@ void setup()
     if (server.hasArg("value"))
     {
       conveyorSpeed = server.arg("value").toInt();
-      conveyorSpeed = constrain(conveyorSpeed, 55, 65);
+      conveyorSpeed = constrain(conveyorSpeed, 0, 255);
       if (isConveyorRunning || isConveyorReversing)
       {
         ledcWrite(CONVEYOR_CH, conveyorSpeed);
@@ -289,10 +332,10 @@ void setup()
   // =================================================
   server.on("/status", HTTP_GET, []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
-    String json = "{\"base\":" + String(baseAngle) + 
-                  ",\"shoulder\":" + String(shoulderAngle) + 
-                  ",\"elbow\":" + String(elbowAngle) + 
-                  ",\"claw\":" + String(clawAngle) + 
+    String json = "{\"base\":" + String((int)currentBase) + 
+                  ",\"shoulder\":" + String((int)currentShoulder) + 
+                  ",\"elbow\":" + String((int)currentElbow) + 
+                  ",\"claw\":" + String((int)currentClaw) + 
                   ",\"mode\":" + (webMode ? "\"web\"" : "\"physical\"") + 
                   ",\"speed\":" + String(conveyorSpeed) + "}";
     server.send(200, "application/json", json);
@@ -332,9 +375,99 @@ void setup()
 }
 
 // =====================================================
+// Loop Logic Helpers
+// =====================================================
+
+// Interpolate servo positions toward their targets
+void updateServoInterpolation() {
+  if (millis() - lastSmoothUpdate < smoothUpdateInterval) return;
+  lastSmoothUpdate = millis();
+
+  // Speed factor: how many degrees to move per 15ms step.
+  // 1.5 degrees per 15ms = 100 degrees/sec. This is smooth yet responsive.
+  const float stepRate = 1.5;
+
+  // Check if we are returning to the home position (90, 90, 90, 90)
+  bool isHoming = (targetBase == 90.0 && targetShoulder == 90.0 && targetElbow == 90.0 && targetClaw == 90.0);
+
+  if (isHoming) {
+    // Safe sequential homing order: Claw -> Elbow -> Shoulder -> Base
+    if (currentClaw != targetClaw) {
+      currentClaw = approach(targetClaw, currentClaw, stepRate);
+    } else if (currentElbow != targetElbow) {
+      currentElbow = approach(targetElbow, currentElbow, stepRate);
+    } else if (currentShoulder != targetShoulder) {
+      currentShoulder = approach(targetShoulder, currentShoulder, stepRate);
+    } else {
+      currentBase = approach(targetBase, currentBase, stepRate);
+    }
+  } else {
+    // Simultaneous coordinate changes for standard operational control responsiveness
+    currentBase = approach(targetBase, currentBase, stepRate);
+    currentShoulder = approach(targetShoulder, currentShoulder, stepRate);
+    currentElbow = approach(targetElbow, currentElbow, stepRate);
+    currentClaw = approach(targetClaw, currentClaw, stepRate);
+  }
+
+  writeServoAngle(BASE_CH, (int)currentBase);
+  writeServoAngle(SHOULDER_CH, (int)currentShoulder);
+  writeServoAngle(ELBOW_CH, (int)currentElbow);
+  writeServoAngle(CLAW_CH, (int)currentClaw);
+}
+
+// Read physical hardware joysticks and increment targets
+void handlePhysicalJoysticks() {
+  if (millis() - lastPhysUpdate < physUpdateInterval) return;
+  lastPhysUpdate = millis();
+
+  // Read analog voltages (0 to 4095)
+  int valBase = analogRead(JOY_BASE_PIN);
+  int valShoulder = analogRead(JOY_SHOULDER_PIN);
+  int valElbow = analogRead(JOY_ELBOW_PIN);
+  int valClaw = analogRead(JOY_CLAW_PIN);
+
+  // Center is ~2048. Implement a deadzone of ~200 to prevent drifting.
+  float dispBase = 0.0;
+  float dispShoulder = 0.0;
+  float dispElbow = 0.0;
+  float dispClaw = 0.0;
+
+  if (abs(valBase - 2048) > 200) {
+    dispBase = (valBase - 2048) / 2048.0;
+  }
+  if (abs(valShoulder - 2048) > 200) {
+    dispShoulder = (valShoulder - 2048) / 2048.0;
+  }
+  if (abs(valElbow - 2048) > 200) {
+    dispElbow = (valElbow - 2048) / 2048.0;
+  }
+  if (abs(valClaw - 2048) > 200) {
+    dispClaw = (valClaw - 2048) / 2048.0;
+  }
+
+  // Adjust target angles by a speed multiplier
+  const float speedMultiplier = 1.2;
+
+  // Change target angles incrementally
+  targetBase = constr(targetBase + (dispBase * speedMultiplier), 0, 180);
+  targetShoulder = constr(targetShoulder + (dispShoulder * speedMultiplier), 0, 180);
+  targetElbow = constr(targetElbow + (dispElbow * speedMultiplier), 0, 180);
+  targetClaw = constr(targetClaw + (dispClaw * speedMultiplier), 0, 180);
+}
+
+// =====================================================
 // Loop
 // =====================================================
 void loop()
 {
+  // 1. Process network commands
   server.handleClient();
+
+  // 2. Read physical joysticks if physical mode is enabled
+  if (!webMode) {
+    handlePhysicalJoysticks();
+  }
+
+  // 3. Smoothly interpolate servos to their targets (always active)
+  updateServoInterpolation();
 }
