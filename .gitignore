@@ -14,3 +14,6 @@ exported_models/
 # OS Files
 .DS_Store
 
+# Frontend
+argobot-app/node_modules/
+argobot-app/dist/
