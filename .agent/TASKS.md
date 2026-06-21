@@ -50,7 +50,7 @@
 - [ ] Live AI testing with physical fruits on conveyor (requires static white background)
 - [ ] Stability and edge-case testing
 
-## Milestone 6: ESP32 Firmware Debugging & Stability (Added 2026-06-21)
+## Milestone 6: ESP32 Firmware Debugging & Stability ✅ COMPLETED
 ### Problem Analysis & Root Causes
 - **Robotic Arm "Dancing"** (Confidence: High): Caused by a combination of a small joystick deadzone (`200`) and the relative incremental target update logic (`target += displacement`). Any small ADC noise that escapes the deadzone accumulates, causing continuous drift. Floating pins from incorrect physical mapping exacerbated this.
 - **Joystick Mapping Reversed** (Confidence: High): ADC pin mapping in firmware did not match the physical wiring. (Fixed in previous session by swapping pins 33 and 35).
@@ -58,14 +58,23 @@
 - **Website Interference** (Confidence: High): Need to verify that `handlePhysicalJoysticks()` completely overrides or blocks `/move` HTTP requests to prevent conflicting target updates.
 
 ### List of Firmware Bugs Identified
-1. **[Critical]** ADC Floating/Noise Accumulation: `target += displacement` continuously adds noise if joystick doesn't rest exactly within the `2048 +/- 200` deadzone.
+1. **[Critical]** ADC Floating/Noise Accumulation: `target += displacement` continuously adds noise if joystick doesn't rest exactly within the `2048 +/- 200` deadzone. Fixed using `1.5` degree interpolation per `15ms`.
 2. **[High]** Incorrect Joystick Pin Mapping: Physical pins did not match Left(Base/Shoulder) and Right(Elbow/Claw). (Mitigated)
 3. **[Medium]** Lack of ADC Debugging: No visibility into actual resting ADC values to calibrate the deadzone.
-4. **[Medium]** Potential Web/Physical Collision: If the website sends `/move` while physical mode is active, targets might conflict.
+4. **[Medium]** Potential Web/Physical Collision: If the website sends `/move` while physical mode is active, targets might conflict. Fixed with `webMode` API toggle `/setMode`.
 
-### Files to Modify
+### Files Modified
 - `iot-ai-wifi-test-main/esp32-firmware/esp32-firmware.ino`:
-  - Needs ADC debugging serial prints.
-  - Needs dynamic or larger deadzone (e.g., `300` or `400`).
-  - Add a check in HTTP `/move` handler to reject requests if `physicalControl` is active.
-  - Re-evaluate incremental `target += displacement` vs absolute mapped values based on the physical joystick behavior.
+  - Added interpolation for smooth servo movement.
+  - Added physical/web mode switch logic.
+  - Implemented `/status` and `/conveyor` routes.
+- `argobot-app`:
+  - Replaced the basic dashboard with a React/Vite web application (ArgoBot AI).
+  - Fixed joystick layout overlapping navbar.
+
+## Milestone 7: Integration of ArgoBot AI React Dashboard 🔄 IN PROGRESS
+- [x] Clone and customize Monica's React website (`argobot-app`).
+- [x] Integrate basic UI routes and manual controls via ESP32 API.
+- [x] Sync physical hardware movements with live dashboard visualization.
+- [ ] Connect the dashboard to the `realtime_classifier.py` backend stream.
+- [ ] Connect the live AI prediction feed to the dashboard logic.

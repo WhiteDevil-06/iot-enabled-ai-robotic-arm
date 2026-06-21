@@ -27,6 +27,9 @@ Build a fully integrated AI-powered robotic fruit sorting system capable of dete
 - Laptop successfully connected to ESP32.
 - Robotic arm successfully controlled from browser dashboard.
 - Project architecture and Dataset finalized.
+- React-based ArgoBot AI dashboard integrated (`argobot-app`).
+- Physical/Web mode toggle logic implemented in ESP32 firmware and UI.
+- Firmware jitter and brownout resets resolved with smooth interpolation.
 
 ## Rejected Approaches
 - Transfer learning (initially avoided to keep the system simple).

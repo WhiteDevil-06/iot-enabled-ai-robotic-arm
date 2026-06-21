@@ -29,9 +29,10 @@ The AI-Based Robotic Fruit Sorting System integrates a laptop-based AI predictio
 - **Throttling**: Dashboard frontend limits requests to every 150ms during manual control to maintain stability.
 
 ## 5. Dashboard Architecture
-- Served by the local backend.
-- Provides manual override (joystick/sliders) and live monitoring.
-- Connects directly to the ESP32 IP (`192.168.1.100`) via client-side fetch for manual mode, while automated mode is handled by the backend server.
+- **Frontend**: A React/Vite web application (`argobot-app`) branded as ArgoBot AI.
+- Provides manual override (joystick/sliders) and live monitoring (telemetry, prediction logs).
+- Connects directly to the ESP32 IP (`192.168.1.100`) via client-side fetch for manual movement (`/move`), conveyor controls (`/conveyor`), and status polling (`/status`).
+- Controls ESP32 mode (`/setMode`) between Web (dashboard overrides) and Physical (hardware joysticks).
 
 ## 6. Final Deployment Flow
 - **Environment**: Local execution only (No cloud deployment).

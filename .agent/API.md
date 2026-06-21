@@ -19,6 +19,14 @@ The ESP32 runs an asynchronous web server that listens for basic HTTP GET reques
 - **Status 200 OK**: Command received successfully.
 - No complex JSON response required.
 
+### Additional Endpoints
+- **Mode Toggle**: `GET http://<ESP32_IP>/setMode?mode=web|physical`
+  - Switches between web-controlled movement and physical joystick control.
+- **Conveyor Control**: `GET http://<ESP32_IP>/conveyor?action=start|stop|reverse`
+  - Can also accept `/conveyor/speed?value={0-255}` for PWM speed control.
+- **Telemetry**: `GET http://<ESP32_IP>/status`
+  - Returns a JSON object with the current interpolated angles of the servos, current mode, and conveyor speed.
+
 ## 2. Prediction-to-Action Mapping
 The logic is entirely handled by the laptop (brain). The ESP32 is treated as a "dumb" actuator.
 
