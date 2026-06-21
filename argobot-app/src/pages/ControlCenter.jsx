@@ -9,7 +9,7 @@ const ControlCenter = () => {
   const [espIp, setEspIp] = useState(() => readStoredString('esp_ip', '192.168.4.1'));
   const [isConnected, setIsConnected] = useState(false);
   const [activeTab, setActiveTab] = useState('arm'); // 'arm' | 'conveyor'
-  const [isWebsiteControl, setIsWebsiteControl] = useState(true);
+  const [isSystemActive, setIsSystemActive] = useState(true);
 
   // --- Robotic Arm State (angles 0-180) ---
   const [armState, setArmState] = useState({
@@ -99,7 +99,7 @@ const ControlCenter = () => {
 
   // --- Throttled ESP32 fetch move dispatcher ---
   const throttleSendMove = useCallback((state) => {
-    if (!isWebsiteControl) return;
+    if (!isSystemActive) return;
     pendingStateRef.current = state;
     if (sendTimerRef.current) return;
 
@@ -132,24 +132,15 @@ const ControlCenter = () => {
     throttleSendMove(armState);
   }, [armState, throttleSendMove]);
 
-  // --- Toggle Mode Switch handler ---
-  const handleModeToggle = async () => {
-    const nextMode = !isWebsiteControl;
-    setIsWebsiteControl(nextMode);
-
-    const modeParam = nextMode ? 'web' : 'physical';
-    const url = `http://${espIp}/setMode?mode=${modeParam}`;
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1000);
-      const response = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      setIsConnected(response.ok);
-      showToast(`${nextMode ? 'Website Control' : 'Physical Joystick'} Mode Activated`, "success");
-    } catch (err) {
-      console.warn("ESP32 mode error:", err);
-      setIsConnected(false);
-      showToast("Error configuring control mode on ESP32", "warning");
+  // --- Toggle Mode Switch handler (Safety Lock) ---
+  const handleModeToggle = () => {
+    const nextMode = !isSystemActive;
+    setIsSystemActive(nextMode);
+    
+    if (nextMode) {
+      showToast("System Unlocked - Arm Active", "success");
+    } else {
+      showToast("System Locked - Controls Disabled", "warning");
     }
   };
 
@@ -217,10 +208,7 @@ const ControlCenter = () => {
           const data = await res.json();
 
           // Sync Website Mode switch
-          const espWebMode = (data.mode === "web");
-          if (isWebsiteControl !== espWebMode) {
-            setIsWebsiteControl(espWebMode);
-          }
+          // (Removed because ESP32 no longer stores mode)
 
           // Sync conveyor speed
           if (data.speed !== undefined) {
@@ -231,14 +219,7 @@ const ControlCenter = () => {
           }
 
           // Sync physical servo values in physical controller mode
-          if (!espWebMode && data.base !== undefined) {
-            setArmState({
-              base: data.base,
-              shoulder: data.shoulder,
-              elbow: data.elbow,
-              claw: data.claw
-            });
-          }
+          // (Removed because physical controllers are gone)
         } else if (active) {
           setIsConnected(false);
         }
@@ -254,7 +235,7 @@ const ControlCenter = () => {
       active = false;
       clearInterval(interval);
     };
-  }, [espIp, isWebsiteControl]);
+  }, [espIp]);
 
   // --- Joystick continuous coordinate tracking logic loop ---
   const startJoystickLoop = useCallback(() => {
@@ -364,7 +345,7 @@ const ControlCenter = () => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (document.activeElement.tagName.toLowerCase() === 'input') return;
-      if (!isWebsiteControl || isPlaying) return;
+      if (!isSystemActive || isPlaying) return;
 
       const key = e.key.toLowerCase();
 
@@ -459,11 +440,11 @@ const ControlCenter = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isWebsiteControl, isPlaying, handleSaveAction, handleRunReplay, handleClearActions, startJoystickLoop, checkStopJoystickLoop]);
+  }, [isSystemActive, isPlaying, handleSaveAction, handleRunReplay, handleClearActions, startJoystickLoop, checkStopJoystickLoop]);
 
   // --- Slider input changes handler ---
   const handleSliderChange = (axis, value) => {
-    if (!isWebsiteControl || isPlaying) return;
+    if (!isSystemActive || isPlaying) return;
     setArmState((prev) => ({
       ...prev,
       [axis]: parseInt(value, 10)
@@ -541,7 +522,7 @@ const ControlCenter = () => {
                   <div
                     ref={leftJoystickZoneRef}
                     id="joystick-left"
-                    className={`nipplejs-container-target ${!isWebsiteControl || isPlaying ? 'disabled-control-component' : ''}`}
+                    className={`nipplejs-container-target ${!isSystemActive || isPlaying ? 'disabled-control-component' : ''}`}
                   />
                 </div>
 
@@ -559,7 +540,7 @@ const ControlCenter = () => {
                       max="180"
                       value={armState.base}
                       onChange={(e) => handleSliderChange('base', e.target.value)}
-                      disabled={!isWebsiteControl || isPlaying}
+                      disabled={!isSystemActive || isPlaying}
                     />
                   </div>
 
@@ -576,7 +557,7 @@ const ControlCenter = () => {
                       max="180"
                       value={armState.shoulder}
                       onChange={(e) => handleSliderChange('shoulder', e.target.value)}
-                      disabled={!isWebsiteControl || isPlaying}
+                      disabled={!isSystemActive || isPlaying}
                     />
                   </div>
                 </div>
@@ -593,7 +574,7 @@ const ControlCenter = () => {
                   <div
                     ref={rightJoystickZoneRef}
                     id="joystick-right"
-                    className={`nipplejs-container-target ${!isWebsiteControl || isPlaying ? 'disabled-control-component' : ''}`}
+                    className={`nipplejs-container-target ${!isSystemActive || isPlaying ? 'disabled-control-component' : ''}`}
                   />
                 </div>
 
@@ -611,7 +592,7 @@ const ControlCenter = () => {
                       max="180"
                       value={armState.elbow}
                       onChange={(e) => handleSliderChange('elbow', e.target.value)}
-                      disabled={!isWebsiteControl || isPlaying}
+                      disabled={!isSystemActive || isPlaying}
                     />
                   </div>
 
@@ -628,7 +609,7 @@ const ControlCenter = () => {
                       max="180"
                       value={armState.claw}
                       onChange={(e) => handleSliderChange('claw', e.target.value)}
-                      disabled={!isWebsiteControl || isPlaying}
+                      disabled={!isSystemActive || isPlaying}
                     />
                   </div>
                 </div>
@@ -642,7 +623,7 @@ const ControlCenter = () => {
                   id="btn-reset"
                   className="btn btn-outline"
                   onClick={handleResetArm}
-                  disabled={!isWebsiteControl || isPlaying}
+                  disabled={!isSystemActive || isPlaying}
                 >
                   <RefreshCcw size={16} /> Reset
                 </button>
@@ -651,7 +632,7 @@ const ControlCenter = () => {
                   id="btn-save-action"
                   className="btn btn-outline"
                   onClick={handleSaveAction}
-                  disabled={!isWebsiteControl || isPlaying}
+                  disabled={!isSystemActive || isPlaying}
                   title="Save current arm coordinates to replay buffer (Shortcut: Q)"
                 >
                   <Save size={16} /> Save Action
@@ -661,7 +642,7 @@ const ControlCenter = () => {
                   id="btn-run-actions"
                   className="btn btn-primary"
                   onClick={handleRunReplay}
-                  disabled={!isWebsiteControl || isPlaying || savedActions.length === 0}
+                  disabled={!isSystemActive || isPlaying || savedActions.length === 0}
                   title="Replay all buffered coordinates sequentially (Shortcut: T)"
                 >
                   <Play size={16} /> Play Actions
@@ -671,7 +652,7 @@ const ControlCenter = () => {
                   id="btn-clear-actions"
                   className="btn btn-outline"
                   onClick={handleClearActions}
-                  disabled={!isWebsiteControl || isPlaying}
+                  disabled={!isSystemActive || isPlaying}
                   title="Clear all buffered coordinates in replay memory (Shortcut: R)"
                 >
                   <Trash2 size={16} /> Clear Actions
@@ -684,14 +665,14 @@ const ControlCenter = () => {
 
               {/* Mode Toggle Switch */}
               <div className="mode-toggle-switch-container">
-                <span className="mode-toggle-state-label" id="mode-label">
-                  {isWebsiteControl ? 'Website Control' : 'Physical Joysticks'}
+                <span className="mode-toggle-state-label" id="mode-label" style={{ color: isSystemActive ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>
+                  {isSystemActive ? '🔓 Arm Active' : '🔒 Arm Locked'}
                 </span>
                 <label className="custom-mode-switch">
                   <input
                     type="checkbox"
                     id="mode-toggle"
-                    checked={isWebsiteControl}
+                    checked={isSystemActive}
                     onChange={handleModeToggle}
                     disabled={isPlaying}
                   />

@@ -95,7 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const isManual = els.modeToggle.checked;
         const label = document.getElementById('mode-label');
         if (label) {
-            label.textContent = isManual ? "Website Control" : "Physical Joysticks";
+            label.textContent = isManual ? "🔓 Arm Active" : "🔒 Arm Locked";
+            label.style.color = isManual ? "#10b981" : "#ef4444";
+            label.style.fontWeight = "bold";
         }
 
         // Joystick zones + manual slider groups
@@ -124,27 +126,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Handoff to ESP32: Notify the server of the mode change (only on user interaction)
-        if (!isProgrammatic && commsAgent.ip) {
-            const modeParam = isManual ? 'web' : 'physical';
-            try {
-                const response = await fetch('http://' + commsAgent.ip + '/setMode?mode=' + modeParam);
-                if (response.ok) {
-                    commsAgent.setStatus(true);
-                } else {
-                    commsAgent.setStatus(false);
-                }
-            } catch (err) {
-                commsAgent.setStatus(false);
-                console.warn('Error setting control mode on ESP32:', err);
-            }
-        }
+        // (Removed because physical controllers are gone and /setMode endpoint is removed)
 
         // Show visual feedback toast (only on user interaction)
         if (!isProgrammatic && lastModeState !== null && lastModeState !== isManual) {
             if (isManual) {
-                showToast("Website Control Mode Activated", "success");
+                showToast("System Unlocked - Arm Active", "success");
             } else {
-                showToast("Physical Joystick Mode Activated", "info");
+                showToast("System Locked - Controls Disabled", "warning");
             }
         }
         lastModeState = isManual;
