@@ -52,6 +52,44 @@ const ControlCenter = () => {
   useEffect(() => { tempBinSequenceRef.current = tempBinSequence; }, [tempBinSequence]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
+  // Sync connection state with localStorage
+  useEffect(() => {
+    writeStoredString('esp_connected', String(isConnected));
+  }, [isConnected]);
+
+  // Sync conveyor status with localStorage
+  useEffect(() => {
+    writeStoredString('conveyor_status', conveyorStatus);
+  }, [conveyorStatus]);
+
+  // Sync arm active state with localStorage
+  useEffect(() => {
+    writeStoredString('arm_active', String(isSystemActive));
+  }, [isSystemActive]);
+
+  // Sync states from localStorage changes (e.g. from Dashboard actions)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedConveyor = localStorage.getItem('conveyor_status') || 'stopped';
+      const storedArmActive = localStorage.getItem('arm_active') !== 'false';
+      
+      if (storedConveyor !== conveyorStatus) {
+        setConveyorStatus(storedConveyor);
+      }
+      if (storedArmActive !== isSystemActive) {
+        setIsSystemActive(storedArmActive);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    const interval = setInterval(handleStorageChange, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [conveyorStatus, isSystemActive]);
+
   const displacementsRef = useRef({ base: 0, shoulder: 0, elbow: 0, claw: 0 });
   const joystickIntervalRef = useRef(null);
   const activeKeysRef = useRef(new Set());

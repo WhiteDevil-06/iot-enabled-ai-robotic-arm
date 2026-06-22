@@ -103,6 +103,10 @@
   pointer-events: none;
 }
 
+.gallery-img-overlay span {
+  color: #FFFFFF !important;
+}
+
 .gallery-frame:hover .gallery-img-overlay {
   opacity: 1;
 }
@@ -183,6 +187,14 @@
   align-items: center;
   gap: var(--spacing-xs);
   text-align: center;
+}
+
+.lightbox-caption span {
+  color: #FFFFFF !important;
+}
+
+.lightbox-caption .text-gray-400 {
+  color: #94A3B8 !important;
 }
 
 .lightbox-close-btn {

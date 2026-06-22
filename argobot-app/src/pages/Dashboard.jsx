@@ -1,10 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Wifi, Cpu, Video, Settings, Activity, Play, Square, RefreshCcw, CheckCircle, XCircle, Box, Apple } from 'lucide-react';
 import './Dashboard.css';
 import { INITIAL_HISTORY, INITIAL_STATS, isHistory, isStats, readStoredJson, readStoredString, writeStoredJson, writeStoredString } from '../utils/storage';
 
 const Dashboard = () => {
   const [isRunning, setIsRunning] = useState(() => readStoredString('system_running', 'true') !== 'false');
+
+  // Sync state from Control Center
+  const [espConnected, setEspConnected] = useState(() => readStoredString('esp_connected', 'false') === 'true');
+  const [conveyorStatus, setConveyorStatus] = useState(() => readStoredString('conveyor_status', 'stopped'));
+  const [armActive, setArmActive] = useState(() => readStoredString('arm_active', 'true') === 'true');
+
+  // Camera stream state
+  const [videoStream, setVideoStream] = useState(null);
+  const videoRef = useRef(null);
 
   // Statistics State
   const [stats, setStats] = useState(() => {
@@ -43,9 +52,59 @@ const Dashboard = () => {
     }
   };
 
+  // Sync state changes from localStorage
+  useEffect(() => {
+    const syncStates = () => {
+      setEspConnected(readStoredString('esp_connected', 'false') === 'true');
+      setConveyorStatus(readStoredString('conveyor_status', 'stopped'));
+      setArmActive(readStoredString('arm_active', 'true') === 'true');
+    };
+
+    const interval = setInterval(syncStates, 500);
+    window.addEventListener('storage', syncStates);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', syncStates);
+    };
+  }, []);
+
+  // Request webcam stream when system is running
+  useEffect(() => {
+    let currentStream = null;
+
+    if (isRunning) {
+      navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } })
+        .then((stream) => {
+          currentStream = stream;
+          setVideoStream(stream);
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        })
+        .catch((err) => {
+          console.warn("Camera access denied or unavailable:", err);
+        });
+    } else {
+      if (videoStream) {
+        videoStream.getTracks().forEach((track) => track.stop());
+        setVideoStream(null);
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    }
+
+    return () => {
+      if (currentStream) {
+        currentStream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [isRunning]);
+
   // Simulation Interval Effect
   useEffect(() => {
-    if (!isRunning) return;
+    if (!isRunning || conveyorStatus !== 'running') return;
 
     const fruits = ['Apple', 'Banana', 'Orange', 'Guava'];
 
@@ -113,7 +172,7 @@ const Dashboard = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isRunning]);
+  }, [isRunning, conveyorStatus]);
 
   // System Reset Handler
   const handleReset = () => {
@@ -161,38 +220,40 @@ const Dashboard = () => {
       {/* Top Status Strip */}
       <div className="status-strip grid grid-cols-5 gap-4">
         <div className="status-card card flex items-center gap-3">
-          <Wifi className={isRunning ? 'text-success' : 'text-secondary'} size={24} />
+          <Wifi className={espConnected ? 'text-success' : 'text-secondary'} size={24} />
           <div>
             <div className="text-sm font-semibold">ESP32</div>
-            <div className="text-xs text-secondary">{isRunning ? 'Connected' : 'Standby'}</div>
+            <div className="text-xs text-secondary">{espConnected ? 'Connected' : 'Offline'}</div>
           </div>
         </div>
         <div className="status-card card flex items-center gap-3">
-          <Cpu className={isRunning ? 'text-success' : 'text-secondary'} size={24} />
+          <Cpu className="text-secondary" size={24} />
           <div>
             <div className="text-sm font-semibold">AI Model</div>
-            <div className="text-xs text-secondary">{isRunning ? 'Online' : 'Standby'}</div>
+            <div className="text-xs text-secondary">Offline</div>
           </div>
         </div>
         <div className="status-card card flex items-center gap-3">
-          <Video className={isRunning ? 'text-success' : 'text-secondary'} size={24} />
+          <Video className={isRunning && videoStream ? 'text-success' : 'text-secondary'} size={24} />
           <div>
             <div className="text-sm font-semibold">Camera</div>
-            <div className="text-xs text-secondary">{isRunning ? 'Active' : 'Paused'}</div>
+            <div className="text-xs text-secondary">{isRunning && videoStream ? 'Active' : 'Paused'}</div>
           </div>
         </div>
         <div className="status-card card flex items-center gap-3">
-          <Settings className={isRunning ? 'text-success' : 'text-secondary'} size={24} />
+          <Settings className={espConnected && armActive ? 'text-success' : 'text-secondary'} size={24} />
           <div>
             <div className="text-sm font-semibold">Robot Arm</div>
-            <div className="text-xs text-secondary">{isRunning ? 'Ready' : 'Idle'}</div>
+            <div className="text-xs text-secondary">{!espConnected ? 'Offline' : armActive ? 'Ready' : 'Locked'}</div>
           </div>
         </div>
         <div className="status-card card flex items-center gap-3">
-          <Activity className={isRunning ? "text-success" : "text-muted"} size={24} />
+          <Activity className={conveyorStatus !== 'stopped' ? 'text-success' : 'text-muted'} size={24} />
           <div>
             <div className="text-sm font-semibold">Conveyor</div>
-            <div className="text-xs text-secondary">{isRunning ? 'Running' : 'Stopped'}</div>
+            <div className="text-xs text-secondary">
+              {conveyorStatus === 'running' ? 'Running' : conveyorStatus === 'reversing' ? 'Reversing' : 'Stopped'}
+            </div>
           </div>
         </div>
       </div>
@@ -203,14 +264,25 @@ const Dashboard = () => {
         <div className="camera-section">
           <div className="camera-card card p-0 overflow-hidden relative">
             <div className={`live-indicator ${isRunning ? 'is-live' : 'is-paused'}`}>{isRunning ? 'LIVE' : 'PAUSED'}</div>
-            {/* Camera Feed Placeholder */}
+            {/* Camera Feed Video / Placeholder */}
             <div className="camera-feed-placeholder flex flex-col items-center justify-center gap-4">
               <div className="telemetry-grid-pattern" />
-              <Video className={`text-muted ${isRunning ? 'animate-pulse' : ''}`} size={48} />
-              <div className="text-center">
-                <p className="text-sm font-semibold text-primary">AgroBot AI Telemetry Feed</p>
-                <p className="text-xs text-muted mt-1">Resolution: 1080p | FPS: 30 | Status: {isRunning ? 'Streaming' : 'Standby'}</p>
-              </div>
+              <video 
+                ref={videoRef} 
+                autoPlay 
+                playsInline 
+                muted 
+                className={`camera-video-feed ${isRunning && videoStream ? '' : 'hidden'}`} 
+              />
+              {(!isRunning || !videoStream) && (
+                <>
+                  <Video className={`text-muted ${isRunning ? 'animate-pulse' : ''}`} size={48} />
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-primary">AgroBot AI Telemetry Feed</p>
+                    <p className="text-xs text-muted mt-1">Resolution: 1080p | FPS: 30 | Status: {isRunning ? 'Streaming' : 'Standby'}</p>
+                  </div>
+                </>
+              )}
             </div>
             <div className="camera-overlay card absolute bottom-4 left-4 right-4 flex justify-between items-center p-4">
               <div className="flex items-center gap-4">
