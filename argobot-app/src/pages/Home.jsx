@@ -3,11 +3,18 @@ import { ArrowRight, Eye, CheckCircle, Cpu, Zap, ChevronLeft, ChevronRight, X, S
 import { Link } from 'react-router-dom';
 import './Home.css';
 
-const galleryImages = Array.from({ length: 15 }, (_, i) => ({
-  id: i + 1,
-  src: `/gallery_img${i + 1}.png`,
-  alt: `Project View ${i + 1}`
-}));
+const galleryImages = [
+  { id: 1, src: '/gallery_img1.jpg', alt: 'Manual Control Interface & Joystick Calibration' },
+  { id: 2, src: '/gallery_img2.jpg', alt: 'ESP32 Controller Box & Electronics Integration' },
+  { id: 3, src: '/gallery_img3.jpg', alt: 'Robotic Arm Base Assembly & Alignment' },
+  { id: 4, src: '/gallery_img4.jpg', alt: 'System Integration & Project Team Collaboration' },
+  { id: 5, src: '/gallery_img5.jpg', alt: 'Conveyor & Sorting Logic Field Calibration' },
+  { id: 6, src: '/gallery_img6.jpg', alt: 'Robotic Gripper Actuation & Object Grasping Test' },
+  { id: 7, src: '/gallery_img7.jpg', alt: '4-DOF Robotic Arm Structural Profiling' },
+  { id: 8, src: '/gallery_img8.jpg', alt: 'Closed-Loop Object Sorting Operation Test' },
+  { id: 9, src: '/gallery_img9.jpg', alt: 'Sensitive Object Grasping Calibration (Grape)' },
+  { id: 10, src: '/gallery_img10.jpg', alt: 'Placement Calibration & Bin Destination Routing' }
+];
 
 const Home = () => {
   const scrollRef = useRef(null);
@@ -132,7 +139,7 @@ const Home = () => {
       {/* Hero Section */}
       <section className="hero container grid grid-cols-2 gap-12 items-center mt-12 mb-16">
         <div className="hero-content flex-col gap-6">
-          <h1 className="text-4xl font-bold">Intelligent Robotic Produce Sorting for Modern Factories</h1>
+          <h1 className="text-4xl font-bold">IoT-Enabled AI Robotic Arm for Object Classification & Sorting</h1>
           <p className="text-lg text-secondary">
             AI-powered inspection, robotic sorting, and conveyor automation for food-processing operations.
           </p>
@@ -357,7 +364,7 @@ const Home = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex-col">
             <span className="badge-pill mb-2">Media Gallery</span>
-            <h2 className="text-2xl font-bold m-0 text-white">Project Gallery</h2>
+            <h2 className="text-2xl font-bold m-0 text-white">Development & System Gallery</h2>
           </div>
           <div className="gallery-arrows flex gap-2">
             <button 

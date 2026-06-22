@@ -1,0 +1,291 @@
+.project-overview-page {
+  padding-top: var(--spacing-xxl);
+  padding-bottom: 2rem;
+}
+
+/* Academic Header banner styling */
+.academic-header-banner {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xxl);
+  margin-bottom: var(--spacing-xxl);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme='dark'] .academic-header-banner {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+  border-color: rgba(59, 130, 246, 0.15);
+}
+
+.academic-meta-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary-blue);
+  background-color: var(--primary-blue-tint);
+  border-radius: var(--radius-circle);
+  margin-bottom: var(--spacing-md);
+}
+
+.academic-meta-badge svg {
+  margin-right: 6px;
+}
+
+/* Sections layouts */
+.section-title {
+  position: relative;
+  padding-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.5rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 60px;
+  height: 2px;
+  background-color: var(--primary-blue);
+}
+
+.overview-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-xxl);
+}
+
+/* API Tables styling */
+.api-spec-table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  margin-top: var(--spacing-md);
+}
+
+.api-spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.api-spec-table th, 
+.api-spec-table td {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.api-spec-table th {
+  background-color: var(--elevated-bg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.api-spec-table tr:last-child td {
+  border-bottom: none;
+}
+
+.api-method-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.api-method-badge.get {
+  background-color: var(--primary-blue-tint);
+  color: var(--primary-blue);
+}
+
+.api-path-code {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background-color: var(--elevated-bg);
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Team and Mentors grid */
+.people-section {
+  margin-top: var(--spacing-xxl);
+}
+
+.people-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.mentor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.person-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--spacing-xxl);
+  border-radius: var(--radius-xl);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.person-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-blue);
+}
+
+.person-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-circle);
+  background-color: var(--primary-blue-tint);
+  color: var(--primary-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
+  border: 2px solid var(--border-color);
+  overflow: hidden;
+}
+
+.person-avatar.mentor-avatar {
+  width: 96px;
+  height: 96px;
+}
+
+.person-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.person-card.mentor .person-avatar {
+  background-color: var(--purple-tint);
+  color: var(--purple-accent);
+}
+
+.person-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.person-role {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Diagram styling */
+.mermaid-diagram-card {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+}
+
+.mermaid-flow-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.mermaid-step-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.mermaid-step-node {
+  flex: 1;
+  padding: var(--spacing-lg);
+  background-color: var(--elevated-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mermaid-step-node.active-step {
+  border-color: var(--primary-blue);
+  background-color: var(--primary-blue-tint);
+  box-shadow: var(--shadow-md), 0 0 15px var(--primary-blue-tint);
+  transform: translateY(-2px) scale(1.02);
+  opacity: 1;
+}
+
+.mermaid-step-node.inactive-step {
+  opacity: 0.55;
+  filter: grayscale(20%);
+}
+
+.mermaid-step-node-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+}
+
+.mermaid-step-node-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.mermaid-step-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+@media (max-width: 1024px) {
+  .people-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .mentor-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .overview-card-grid {
+    grid-template-columns: 1fr;
+  }
+  .mentor-grid {
+    grid-template-columns: 1fr;
+  }
+  .mermaid-step-row {
+    flex-direction: column;
+  }
+  .mermaid-step-arrow {
+    transform: rotate(90deg);
+    padding: var(--spacing-sm) 0;
+  }
+}

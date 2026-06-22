@@ -4,9 +4,9 @@ import './Footer.css';
 const Footer = () => {
   return (
     <footer className="footer">
-      <div className="container footer-content grid grid-cols-2 gap-8">
-        <div className="footer-brand flex-col gap-4">
-          <div className="flex items-center gap-2">
+      <div className="container footer-content flex flex-col items-center gap-6 text-center">
+        <div className="footer-brand flex flex-col items-center gap-2">
+          <div className="flex items-center gap-2 justify-center">
             <img src="/image.png" alt="AgroBot AI Logo" className="logo-image" />
             <span className="font-bold text-xl text-white">AgroBot AI</span>
           </div>
@@ -15,19 +15,17 @@ const Footer = () => {
           </p>
         </div>
 
-        <div className="footer-links flex-col gap-4">
-          <h4 className="text-white text-sm">Product</h4>
-          <ul className="flex-col gap-2">
+        <nav className="footer-nav">
+          <ul className="footer-nav-list flex gap-6 justify-center flex-wrap">
             <li><Link to="/" className="text-sm text-gray-400 hover:text-white">Home</Link></li>
+            <li><Link to="/project-overview" className="text-sm text-gray-400 hover:text-white">Project Overview</Link></li>
             <li><Link to="/dashboard" className="text-sm text-gray-400 hover:text-white">Live Dashboard</Link></li>
             <li><Link to="/reports" className="text-sm text-gray-400 hover:text-white">History & Reports</Link></li>
             <li><Link to="/control-center" className="text-sm text-gray-400 hover:text-white">Control Center</Link></li>
           </ul>
-        </div>
-      </div>
-      <div className="container footer-bottom flex justify-between items-center mt-12 pt-6 border-t border-gray-800">
-        <p className="text-sm text-gray-500">© {new Date().getFullYear()} AgroBot AI. All rights reserved.</p>
-        <div className="footer-social-links flex gap-4">
+        </nav>
+
+        <div className="footer-social-links flex justify-center gap-4 mt-2">
           <a 
             href="https://github.com/WhiteDevil-06/iot-enabled-ai-robotic-arm" 
             target="_blank" 
@@ -51,6 +49,9 @@ const Footer = () => {
             </svg>
           </a>
         </div>
+      </div>
+      <div className="container footer-bottom flex flex-col items-center text-center mt-8 pt-6 border-t border-gray-800">
+        <p className="text-sm text-gray-500">© {new Date().getFullYear()} AgroBot AI. All rights reserved.</p>
       </div>
     </footer>
   );

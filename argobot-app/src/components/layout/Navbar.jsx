@@ -50,6 +50,10 @@ const Navbar = () => {
             Home
           </NavLink>
           <span className="nav-separator"></span>
+          <NavLink to="/project-overview" className={({ isActive }) => `nav-link font-medium ${isActive ? 'active' : ''}`}>
+            Project Overview
+          </NavLink>
+          <span className="nav-separator"></span>
           <NavLink to="/dashboard" className={({ isActive }) => `nav-link font-medium ${isActive ? 'active' : ''}`}>
             Live Dashboard
           </NavLink>

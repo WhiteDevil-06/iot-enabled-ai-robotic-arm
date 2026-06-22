@@ -23,16 +23,17 @@
   color: var(--primary-blue);
 }
 
+.footer-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
 .footer-bottom {
   border-top: 1px solid var(--border-color);
   padding-top: 2rem;
 }
 
 @media (max-width: 700px) {
-  .footer-content { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .footer { padding-top: 2.5rem; }
-}
-
-@media (max-width: 480px) {
-  .footer-content { grid-template-columns: minmax(0, 1fr); }
 }

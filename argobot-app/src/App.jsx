@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Reports from './pages/Reports';
 import ControlCenter from './pages/ControlCenter';
 import InfoPage from './pages/InfoPage';
+import ProjectOverview from './pages/ProjectOverview';
 import NotFound from './pages/NotFound';
 
 const ScrollToTop = () => {
@@ -26,6 +27,7 @@ const AppLayout = () => {
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/project-overview" element={<ProjectOverview />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/control-center" element={<ControlCenter />} />
