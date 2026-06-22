@@ -24,7 +24,13 @@
 - **Cinematic vs Manual Servo Speed**: Hardcoding `SERVO_INTERVAL` to `8ms` made manual joystick movement wonderfully responsive but made sequenced playback (where targets change by 60+ degrees at once) look extremely aggressive and jittery. Resolved by making `servoInterval` dynamically configurable via the `/move?speed=X` API, allowing the frontend to specify `speed=8` for manual overrides and `speed=16` for smooth, cinematic sequential playback.
 - **Sequential Homing vs Simultaneous Resets**: Clicking 'Reset' caused all servos to move simultaneously. Depending on arm geometry, this can cause the claw to smash into the base. Resolved by orchestrating homing locally in the frontend with `await new Promise` delays, stepping through Claw -> Elbow -> Shoulder -> Base sequentially to gracefully untangle the arm before retracting.
 
+## Lessons Learned (Session: 2026-06-23)
+- **React Ref Mounting Race Condition on Web Streams**: Accessing video DOM elements immediately on component mount can fail if conditional rendering (`{isRunning && <video />}`) is active. If the element is unmounted, the browser media stream has no target. Toggling element visibility using a `hidden` class ensures the video element is always mounted in the DOM, safely resolving reference timing issues.
+- **Bi-Directional LocalStorage Telemetry Sync**: Synchronizing status indicators (such as conveyor speed, active state, and connection reachability) across multiple tabs (e.g. Dashboard and Control Center) requires combining window `storage` listeners for cross-tab events and a short polling loop (1s) to capture immediate updates in the current active tab.
+- **Light Mode Accessibility and Visual Contrast**: Dynamic overlays (like the home page gallery lightbox and photo cards) that use white text on transparent backgrounds become illegible when toggled to Light Mode. Adding high-contrast dark text selectors, text-shadow properties, or solid background backing plates is essential to maintain WCAG readability under both theme options.
+
 ## Future Debugging Strategy
+
 1. **Confidence Thresholding**: If the model acts erratically, tune the `0.7` confidence threshold.
 2. **Webcam Feed Verification**: Always verify the input tensor visually before it is passed to `model.predict()`.
 3. **Hardware Comms**: If the arm fails to move, check the dashboard `status-indicator` and ensure the laptop is connected to the ESP32's WiFi AP.

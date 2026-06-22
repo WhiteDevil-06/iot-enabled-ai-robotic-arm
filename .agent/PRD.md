@@ -13,4 +13,6 @@
 - Localhost backend (Flask/FastAPI) and HTTP communication.
 - Same Wi-Fi required for ESP32 and backend communication.
 - Cloud services avoided.
-- Keep models simple and input sizes fixed (224x224).
+- Keep models simple and input sizes fixed (128x128).
+- Conveyor belt driven by a yellow TT DC Geared Motor (3V - 6V).
+

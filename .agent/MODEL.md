@@ -69,3 +69,7 @@ A Small CNN to prevent overfitting and ensure fast inference:
 - **Double-Rescaling Bug Resolved**: The model contains a built-in `Rescaling(1./255)` layer. Preprocessing must keep inputs in the `[0.0, 255.0]` range. Shifting to `[0, 1]` in python caused double-rescaling, outputting zero activations (perpetual `FreshApple` predictions). This has been fixed.
 - **Foreground Noise/Arm Triggers**: Hand/arm entries are ignored using edge-touching contour filters.
 - **Auto-Exposure Brightness Shifts**: Resolved by waiting 60 frames for camera auto-brightness to stabilize before starting background calibration.
+
+## 9. Decoupled Integration & Simulation Phase
+To maximize demo stability and allow independent testing of the telemetry interface and conveyor controls, the python-based classification backend (`realtime_classifier.py`) is decoupled. The dashboard telemetry panel displays the live webcam feed via the local browser media APIs, while predictions and sorting actions are simulated in the web application only when the conveyor is active, with the AI Model status card set to offline.
+

@@ -1,6 +1,26 @@
 # Project Session Logs
 
+## Session: 2026-06-23
+
+### What Was Done
+- **Development & System Gallery Upgrade**: Replaced 15 AI placeholder graphics with 10 real-world project pictures showing the physical arm and conveyor setup, complete with custom descriptive captions.
+- **Centered Footer Redesign**: Re-styled and centered the global footer layout in `Footer.jsx` and `Footer.css` to vertically stack quick links and details for a clean look.
+- **Contrast Accessibility Fixes**: Solved contrast issues on dynamic image cards and lightbox text overlays in Light Mode.
+- **Webcam Telemetry Feed**: Integrated local browser webcam streaming dynamically inside the Dashboard's telemetry video box using `navigator.mediaDevices.getUserMedia`.
+- **Ref Mounting Race Condition Prevention**: Kept the video stream reference stable by using CSS-based `hidden` class toggling instead of conditional React mounting.
+- **AI Status Card Offline State**: Configured the AI Model status card to statically show "Offline" since the physical classifier backend is decoupled for manual telemetry testing.
+- **Conveyor Status Tracking**: Decoupled conveyor status checks from the start/stop buttons, tracking and displaying statuses dynamically.
+- **Fruit Classification Simulator**: Conditioned the UI simulator to trigger mock detections only when conveyor state is "running" and system is active.
+
+### Key Results
+| Metric | Value |
+|--------|-------|
+| Gallery Images | 10 Real Photos |
+| Camera Stream | Local Browser WebRTC/MediaDevices |
+| AI Model Status | Offline (Decoupled Phase) |
+
 ## Session: 2026-06-22
+
 
 ### What Was Done
 - **React Frontend Integration**: Fully ported the legacy HTML/JS dashboard into a modern React application (`argobot-app`). Implemented glassmorphism UI, interactive joysticks, sliders, and Toast notifications.

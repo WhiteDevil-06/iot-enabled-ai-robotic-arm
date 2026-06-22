@@ -34,6 +34,13 @@ Build a fully integrated AI-powered robotic fruit sorting system capable of dete
 - AI Subsystem safely decoupled from ESP32 temporarily for stability testing.
 - Fixed React double-save bugs and joystick stutter.
 - Smooth sequential homing and precise inverted PWM conveyor control implemented.
+- Replaced 15 AI placeholders with 10 real-world project photos with custom captions in the homepage gallery.
+- Redesigned the global footer to be centered and vertically stacked.
+- Fixed contrast issues in light mode for image captions and cards.
+- Integrated a live local webcam video stream directly into the Dashboard telemetry.
+- Decoupled conveyor status updates from local control buttons to rely purely on global state sync and status queries.
+- Deactivated the AI model status card (defaulting to offline) for the decoupled testing phase.
+
 
 ## Rejected Approaches
 - Transfer learning (initially avoided to keep the system simple).

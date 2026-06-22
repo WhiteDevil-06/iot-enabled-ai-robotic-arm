@@ -4,7 +4,8 @@
 The AI-Based Robotic Fruit Sorting System integrates a laptop-based AI prediction module with an ESP32-controlled 4-DOF robotic arm.
 - **Laptop (Brain)**: Captures webcam feed, runs CNN inference, and acts as the Backend API server.
 - **ESP32 (Actuator)**: Connects via WiFi (broadcasting its own network), runs an async web server, and controls the servos.
-- **Hardware**: 4-DOF Robotic Arm, Conveyor System, USB Webcam.
+- **Hardware**: 4-DOF Robotic Arm, Conveyor System (driven by a yellow TT DC Geared Motor 3V - 6V), USB Webcam.
+
 
 ## 2. Hardware Flow
 1. **Conveyor moves fruit** into the detection zone.
@@ -33,6 +34,10 @@ The AI-Based Robotic Fruit Sorting System integrates a laptop-based AI predictio
 - Provides manual override (joystick/sliders), sequence recording (Bins), and live monitoring (telemetry, prediction logs).
 - Connects directly to the ESP32 IP (`192.168.4.1`) via client-side fetch for manual movement (`/move`), conveyor controls (`/conveyor`), and status polling (`/status`).
 - ESP32 Firmware acts as a purely non-blocking state machine using `millis()`, allowing seamless multitasking between WiFi HTTP requests and servo interpolation.
+- **Webcam Feed**: Utilizes standard browser media APIs to stream local webcam input directly into a `<video>` container on the dashboard, eliminating ref mounting race conditions.
+- **State Synchronization**: Uses local storage synchronization combined with periodic polling to sync telemetry, conveyor state, and arm readiness seamlessly across multiple tabs.
+- **AI Model Status**: Statically deactivated ("Offline") during the manual demo phase. Predictions and events are simulated dynamically in the UI conditioned on the active conveyor status.
+
 
 ## 6. Final Deployment Flow
 - **Environment**: Local execution only (No cloud deployment).

@@ -104,3 +104,17 @@
 - [x] Fix conveyor belt reverse logic by applying inverted PWM duty cycle.
 - [x] Implement smooth sequential homing (Claw -> Elbow -> Shoulder -> Base) directly in frontend.
 - [x] Implement dynamic `servoInterval` API to enable fast manual control (8ms) and slow cinematic bin playback (16ms).
+
+## Milestone 10: Gallery Upgrade & Telemetry Sync ✅ COMPLETED
+- [x] Copy 10 real-world project photos to the public assets directory.
+- [x] Replace the first 10 slots of the homepage gallery with real photos and custom descriptive captions.
+- [x] Rename the gallery header to "Development & System Gallery".
+- [x] Clean up assets by deleting all 15 old AI placeholder `.png` files.
+- [x] Redesign the footer layout in `Footer.jsx` and `Footer.css` to be fully centered and stacked with the "Quick Links" column header.
+- [x] Fix image gallery lightbox caption and hover card overlay text contrast issues in light mode.
+- [x] Add live webcam access (streamed to a `<video>` element) inside the dashboard telemetry box.
+- [x] Solve React ref mounting race condition for the video stream by always rendering the element and toggling visibility via classes.
+- [x] Decouple conveyor status updates from dashboard start/stop buttons, reading the states purely from the Control Center.
+- [x] Deactivate the AI Model status card (always displays "Offline").
+- [x] Condition the fruit simulation on both the system active state and the conveyor running state.
+
