@@ -54,8 +54,10 @@ int targetShoulder = 90;
 int targetElbow = 90;
 int targetClaw = 90;
 
+int homingStage = 0; // 0: Idle, 1: Claw, 2: Elbow, 3: Shoulder, 4: Base
+
 unsigned long lastServoUpdate = 0;
-const unsigned long SERVO_INTERVAL = 15; // ms per 1-degree step
+const unsigned long SERVO_INTERVAL = 8; // ms per 1-degree step (faster)
 
 // =====================================================
 // Conveyor Settings
@@ -110,7 +112,7 @@ void conveyorStop() {
 void conveyorReverse() {
   isConveyorRunning = false;
   isConveyorReversing = true;
-  ledcWrite(CONVEYOR_CH, 0);
+  ledcWrite(CONVEYOR_CH, 255 - currentConveyorSpeed); // Invert PWM for reverse
   digitalWrite(CONVEYOR_IN1, LOW);
   digitalWrite(CONVEYOR_IN2, HIGH);
   Serial.println("Conveyor Reversed");
@@ -210,11 +212,12 @@ void setup() {
   // =================================================
   server.on("/home", HTTP_GET, []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
-    targetBase = 90;
-    targetShoulder = 90;
-    targetElbow = 90;
+    homingStage = 1;
     targetClaw = 90;
-    server.send(200, "text/plain", "Homing initiated");
+    targetElbow = currentElbow;
+    targetShoulder = currentShoulder;
+    targetBase = currentBase;
+    server.send(200, "text/plain", "Homing initiated sequentially");
   });
 
   // =================================================
@@ -242,9 +245,11 @@ void setup() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
     if (server.hasArg("value")) {
       currentConveyorSpeed = server.arg("value").toInt();
-      // Apply immediately if running
+      // Apply immediately if running or reversing
       if (isConveyorRunning) {
         ledcWrite(CONVEYOR_CH, currentConveyorSpeed);
+      } else if (isConveyorReversing) {
+        ledcWrite(CONVEYOR_CH, 255 - currentConveyorSpeed);
       }
     }
     server.send(200, "text/plain", "Speed updated");
@@ -273,6 +278,13 @@ void loop() {
   // Servo Smoothing Logic: step 1 degree every SERVO_INTERVAL
   if (currentMillis - lastServoUpdate >= SERVO_INTERVAL) {
     lastServoUpdate = currentMillis;
+
+    // Sequential Homing State Machine
+    if (homingStage == 1 && currentClaw == targetClaw) { homingStage = 2; targetElbow = 90; }
+    else if (homingStage == 2 && currentElbow == targetElbow) { homingStage = 3; targetShoulder = 90; }
+    else if (homingStage == 3 && currentShoulder == targetShoulder) { homingStage = 4; targetBase = 90; }
+    else if (homingStage == 4 && currentBase == targetBase) { homingStage = 0; }
+
     bool moved = false;
 
     if (currentBase < targetBase) { currentBase++; moved = true; writeServoDutyCycle(BASE_CH, currentBase); }

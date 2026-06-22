@@ -410,10 +410,10 @@ const ControlCenter = () => {
 
       switch (key) {
         case 'w':
-          displacementsRef.current.shoulder = 1.0;
+          displacementsRef.current.shoulder = -1.0;
           break;
         case 's':
-          displacementsRef.current.shoulder = -1.0;
+          displacementsRef.current.shoulder = 1.0;
           break;
         case 'a':
           displacementsRef.current.base = -1.0;
@@ -428,10 +428,10 @@ const ControlCenter = () => {
           displacementsRef.current.elbow = -1.0;
           break;
         case 'arrowleft':
-          displacementsRef.current.claw = -1.0;
+          displacementsRef.current.claw = 1.0;
           break;
         case 'arrowright':
-          displacementsRef.current.claw = 1.0;
+          displacementsRef.current.claw = -1.0;
           break;
         case 'q':
           movementKey = false;
