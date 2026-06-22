@@ -165,37 +165,37 @@ const Home = () => {
       <section className="benefits-section container mb-16">
         <div className="text-center mb-10 max-w-2xl mx-auto flex-col items-center">
           <span className="badge-pill mb-2">Value Proposition</span>
-          <h2 className="text-3xl font-bold text-white mb-3">Optimize Factory Floor Efficiency</h2>
-          <p className="text-secondary text-base">AgroBot AI integrates computer vision and robotics to automate inspection, reduce waste, and increase sorting throughput.</p>
+          <h2 className="text-3xl font-bold text-white mb-3">Optimize Robotic Sorting & Telemetry</h2>
+          <p className="text-secondary text-base">AgroBot AI integrates IoT controls and web telemetry to configure conveyor automation, coordinate sequences, and run responsive mechanical sorting.</p>
         </div>
         <div className="grid grid-cols-4 gap-6">
           <div className="benefit-card card flex-col gap-4">
             <div className="benefit-icon-wrapper bg-blue-light">
               <Eye size={24} className="text-primary-blue" />
             </div>
-            <h3 className="text-lg font-semibold text-white">Real-Time Inspection</h3>
-            <p className="text-sm text-secondary">Continuously scans the conveyor line to identify defects and route produce instantly.</p>
+            <h3 className="text-lg font-semibold text-white">Joystick Overrides</h3>
+            <p className="text-sm text-secondary">Adjust Base, Shoulder, Elbow, and Claw angles manually with smooth, real-time response from twin joysticks.</p>
           </div>
           <div className="benefit-card card flex-col gap-4">
             <div className="benefit-icon-wrapper bg-blue-light">
               <Sparkles size={24} className="text-primary-blue" />
             </div>
-            <h3 className="text-lg font-semibold text-white">CNN Classification</h3>
-            <p className="text-sm text-secondary">Deep Learning model categorizes fresh vs. rotten items with high accuracy.</p>
+            <h3 className="text-lg font-semibold text-white">Sequence Playback</h3>
+            <p className="text-sm text-secondary">Record specific coordinate paths and replay them for targeted Bin A and Bin B sorting operations.</p>
           </div>
           <div className="benefit-card card flex-col gap-4">
             <div className="benefit-icon-wrapper bg-blue-light">
               <Bot size={24} className="text-primary-blue" />
             </div>
-            <h3 className="text-lg font-semibold text-white">Automated Sorting</h3>
-            <p className="text-sm text-secondary">Robotic arm swiftly separates items, eliminating manual errors and sorting labor.</p>
+            <h3 className="text-lg font-semibold text-white">Conveyor Control</h3>
+            <p className="text-sm text-secondary">Start, stop, reverse, and dynamically adjust speed (PWM) directly from the dashboard.</p>
           </div>
           <div className="benefit-card card flex-col gap-4">
             <div className="benefit-icon-wrapper bg-blue-light">
               <TrendingUp size={24} className="text-primary-blue" />
             </div>
             <h3 className="text-lg font-semibold text-white">Live Monitoring</h3>
-            <p className="text-sm text-secondary">Track real-time throughput metrics and view sorting stats directly on the Cloud dashboard.</p>
+            <p className="text-sm text-secondary">Track active conveyor speed, check board connection reachability, and monitor session statistics locally.</p>
           </div>
         </div>
       </section>
@@ -205,33 +205,33 @@ const Home = () => {
         <div className="text-center mb-10 max-w-2xl mx-auto flex-col items-center">
           <span className="badge-pill mb-2">Operation Flow</span>
           <h2 className="text-3xl font-bold text-white mb-3">How AgroBot Works</h2>
-          <p className="text-secondary text-base">A complete produce lifecycle from conveyor feeding to final bin routing.</p>
+          <p className="text-secondary text-base">A manual and recorded produce lifecycle from local wireless control to bin routing.</p>
         </div>
         <div className="grid grid-cols-5 gap-4 relative">
           <div className="step-flow-card card flex-col items-start gap-3">
             <div className="step-badge">01</div>
-            <h3 className="text-base font-semibold text-white mt-2">Fruit Arrives</h3>
-            <p className="text-xs text-secondary leading-relaxed">Produce is fed onto the conveyor belt and enters the active sorting grid.</p>
+            <h3 className="text-base font-semibold text-white mt-2">Connect Wifi</h3>
+            <p className="text-xs text-secondary leading-relaxed">Power the ESP32 controller and connect the laptop/dashboard to its Access Point.</p>
           </div>
           <div className="step-flow-card card flex-col items-start gap-3">
             <div className="step-badge">02</div>
-            <h3 className="text-base font-semibold text-white mt-2">AI Inspection</h3>
-            <p className="text-xs text-secondary leading-relaxed">High-speed webcam captures frames of incoming items for real-time analysis.</p>
+            <h3 className="text-base font-semibold text-white mt-2">Camera Setup</h3>
+            <p className="text-xs text-secondary leading-relaxed">Mount the USB webcam to feed live video telemetry directly into the dashboard console.</p>
           </div>
           <div className="step-flow-card card flex-col items-start gap-3">
             <div className="step-badge">03</div>
-            <h3 className="text-base font-semibold text-white mt-2">Quality Prediction</h3>
-            <p className="text-xs text-secondary leading-relaxed">CNN classifier classifies quality grade (fresh vs. rotten) within milliseconds.</p>
+            <h3 className="text-base font-semibold text-white mt-2">Run Conveyor</h3>
+            <p className="text-xs text-secondary leading-relaxed">Start the conveyor belt manually and slide the PWM control to feed produce.</p>
           </div>
           <div className="step-flow-card card flex-col items-start gap-3">
             <div className="step-badge">04</div>
-            <h3 className="text-base font-semibold text-white mt-2">Automated Sorting</h3>
-            <p className="text-xs text-secondary leading-relaxed">A highly-responsive robotic arm picks and places rotten items into reject zones.</p>
+            <h3 className="text-base font-semibold text-white mt-2">Record Bins</h3>
+            <p className="text-xs text-secondary leading-relaxed">Save target pick-and-place coordinate paths for Bin A (Accept) and Bin B (Reject).</p>
           </div>
           <div className="step-flow-card card flex-col items-start gap-3">
             <div className="step-badge">05</div>
-            <h3 className="text-base font-semibold text-white mt-2">Final Output</h3>
-            <p className="text-xs text-secondary leading-relaxed">Grade sorted produce reaches output bins, logging logs to dashboard telemetry.</p>
+            <h3 className="text-base font-semibold text-white mt-2">Sort Produce</h3>
+            <p className="text-xs text-secondary leading-relaxed">Trigger saved bin sequences or steer joysticks manually to route fruits into place.</p>
           </div>
         </div>
       </section>
@@ -241,14 +241,14 @@ const Home = () => {
         <div className="text-center mb-10 max-w-2xl mx-auto flex-col items-center">
           <span className="badge-pill mb-2">Technical Pipeline</span>
           <h2 className="text-3xl font-bold text-white mb-3">System Architecture</h2>
-          <p className="text-secondary text-base">Real-time data flow connecting sensors, intelligence models, and physical actuators.</p>
+          <p className="text-secondary text-base">Real-time data flow connecting web browser telemetry, controller servers, and actuators.</p>
         </div>
         <div className="architecture-diagram card p-8">
           <div className="architecture-grid">
             <div className="arch-node">
               <div className="arch-icon bg-blue-light"><Eye className="text-primary-blue" size={24} /></div>
-              <span className="arch-node-title">Industrial Camera</span>
-              <span className="arch-node-desc">Captures 1080p Video</span>
+              <span className="arch-node-title">USB Webcam</span>
+              <span className="arch-node-desc">Captures Live Telemetry</span>
             </div>
             <div className="arch-connector">
               <div className="connector-line"></div>
@@ -256,8 +256,8 @@ const Home = () => {
             </div>
             <div className="arch-node highlighted">
               <div className="arch-icon bg-blue-light"><Cpu className="text-primary-blue" size={24} /></div>
-              <span className="arch-node-title">CNN Classifier</span>
-              <span className="arch-node-desc">Predicts Quality Grade</span>
+              <span className="arch-node-title">Browser Telemetry</span>
+              <span className="arch-node-desc">Renders Control UI</span>
             </div>
             <div className="arch-connector">
               <div className="connector-line"></div>
@@ -265,7 +265,7 @@ const Home = () => {
             </div>
             <div className="arch-node">
               <div className="arch-icon bg-blue-light"><Zap className="text-primary-blue" size={24} /></div>
-              <span className="arch-node-title">System Controller</span>
+              <span className="arch-node-title">ESP32 Server</span>
               <span className="arch-node-desc">IoT Action Dispatcher</span>
             </div>
             <div className="arch-connector">
@@ -274,8 +274,8 @@ const Home = () => {
             </div>
             <div className="arch-node highlighted">
               <div className="arch-icon bg-blue-light"><Bot className="text-primary-blue" size={24} /></div>
-              <span className="arch-node-title">Robotic Arm</span>
-              <span className="arch-node-desc">Actuates Sorting Pick</span>
+              <span className="arch-node-title">4-DOF Robotic Arm</span>
+              <span className="arch-node-desc">Actuates Servo Angles</span>
             </div>
             <div className="arch-connector">
               <div className="connector-line"></div>
@@ -283,8 +283,8 @@ const Home = () => {
             </div>
             <div className="arch-node">
               <div className="arch-icon bg-blue-light"><Database className="text-primary-blue" size={24} /></div>
-              <span className="arch-node-title">Cloud Database</span>
-              <span className="arch-node-desc">Logs Telemetry Stats</span>
+              <span className="arch-node-title">Local Session Logs</span>
+              <span className="arch-node-desc">Stores Activity History</span>
             </div>
           </div>
         </div>
@@ -303,34 +303,35 @@ const Home = () => {
               <li className="flex items-start gap-3">
                 <div className="check-bullet mt-0.5"><CheckCircle size={18} className="text-success" /></div>
                 <div>
-                  <h4 className="text-sm font-semibold text-white">Real-Time Detection Grid</h4>
-                  <p className="text-xs text-secondary mt-1">Locks on objects instantly as they pass the camera sweep zone.</p>
+                  <h4 className="text-sm font-semibold text-white">Smooth Servo Interpolation</h4>
+                  <p className="text-xs text-secondary mt-1">Firmware-level time-based interpolation loop prevents voltage brownouts and sudden resets.</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <div className="check-bullet mt-0.5"><CheckCircle size={18} className="text-success" /></div>
                 <div>
-                  <h4 className="text-sm font-semibold text-white">CNN Sorting Architecture</h4>
-                  <p className="text-xs text-secondary mt-1">Sorts items into Fresh vs. Rotten bins using high-confidence neural predictions.</p>
+                  <h4 className="text-sm font-semibold text-white">Twin Controller Compatibility</h4>
+                  <p className="text-xs text-secondary mt-1">Seamlessly hand off command flow between physical analog joysticks and the browser dashboard interface.</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <div className="check-bullet mt-0.5"><CheckCircle size={18} className="text-success" /></div>
                 <div>
-                  <h4 className="text-sm font-semibold text-white">High-Speed Sorting Loop</h4>
-                  <p className="text-xs text-secondary mt-1">Drives 4-DOF mechanical arm coordinates within millisecond controller responses.</p>
+                  <h4 className="text-sm font-semibold text-white">Dynamic Speed Controls</h4>
+                  <p className="text-xs text-secondary mt-1">Configure active servo write intervals (8ms for quick joystick tracking, 16ms for smooth cinematic playback).</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <div className="check-bullet mt-0.5"><CheckCircle size={18} className="text-success" /></div>
                 <div>
-                  <h4 className="text-sm font-semibold text-white">Web-Based Dashboard Override</h4>
-                  <p className="text-xs text-secondary mt-1">Allows visual feedback monitor and direct manual coordinate servo adjustments.</p>
+                  <h4 className="text-sm font-semibold text-white">Local Storage Memory</h4>
+                  <p className="text-xs text-secondary mt-1">Store individual coordinate steps and record full pick-and-place sequence maps directly in local memory.</p>
                 </div>
               </li>
             </ul>
           </div>
         </div>
+
 
         {/* Model Performance Column */}
         <div className="model-performance-col h-full flex-col">

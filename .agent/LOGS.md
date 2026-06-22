@@ -11,6 +11,9 @@
 - **AI Status Card Offline State**: Configured the AI Model status card to statically show "Offline" since the physical classifier backend is decoupled for manual telemetry testing.
 - **Conveyor Status Tracking**: Decoupled conveyor status checks from the start/stop buttons, tracking and displaying statuses dynamically.
 - **Fruit Classification Simulator**: Conditioned the UI simulator to trigger mock detections only when conveyor state is "running" and system is active.
+- **Homepage Copy & Layout Realignment**: Cleaned up the value propositions, operations steps, and features list on the Home page to describe only what is actually built (twin joysticks, bin sequence recordings, smooth firmware interpolation, and local logs). Modified `Home.css` to add `height: 100%` and `min-height` constraints on cards to resolve any potential layout overlaps and text overflows.
+- **Architecture Diagram Sync**: Synced the technical pipeline node chart with the implemented flow (USB Webcam -> Browser Telemetry -> ESP32 Server -> 4-DOF Robotic Arm -> Local Session Logs).
+
 
 ### Key Results
 | Metric | Value |

@@ -5,7 +5,8 @@ The frontend is a React/Vite application styled with modern glassmorphism.
 ## 1. Home Page
 - **Project Overview**: Mission statement, team details, and MVP scope.
 - **Metrics**: High-level statistics of the system (e.g., accuracy, fruits sorted).
-- **Architecture**: A visual flow of how the laptop, AI, and ESP32 interact.
+- **Architecture**: A visual flow of how the USB Webcam, Browser Telemetry, ESP32 Server, 4-DOF Robotic Arm, and Local Session Logs interact.
+
 - **Gallery**: "Development & System Gallery" featuring 10 real-world project photos and custom descriptive captions, with high-contrast text overlays in light mode.
 - **Global Footer**: Centered layout displaying GitHub repository link via inline SVG icon.
 
