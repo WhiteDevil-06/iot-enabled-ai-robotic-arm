@@ -13,12 +13,27 @@ const Navbar = () => {
   useEffect(() => {
     if (isDark) {
       document.documentElement.setAttribute('data-theme', 'dark');
-        writeStoredString('theme', 'dark');
+      writeStoredString('theme', 'dark');
     } else {
       document.documentElement.removeAttribute('data-theme');
-        writeStoredString('theme', 'light');
+      writeStoredString('theme', 'light');
     }
   }, [isDark]);
+
+  useEffect(() => {
+    if (!showNotifications) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setShowNotifications(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showNotifications]);
 
   const toggleTheme = () => setIsDark(!isDark);
 
