@@ -100,3 +100,7 @@
 - [x] Fix React frontend double-save bug on `Q` keypress via `event.repeat` blocking.
 - [x] Re-style React Control Center panels with glassmorphism and `lucide-react` icons.
 - [x] Embed GitHub repository SVG icon in the global frontend Footer.
+- [x] Swap W/S and ArrowLeft/ArrowRight keybinds to correctly match physical orientation.
+- [x] Fix conveyor belt reverse logic by applying inverted PWM duty cycle.
+- [x] Implement smooth sequential homing (Claw -> Elbow -> Shoulder -> Base) directly in frontend.
+- [x] Implement dynamic `servoInterval` API to enable fast manual control (8ms) and slow cinematic bin playback (16ms).
