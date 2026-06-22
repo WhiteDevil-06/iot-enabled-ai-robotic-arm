@@ -57,7 +57,7 @@ int targetClaw = 90;
 int homingStage = 0; // 0: Idle, 1: Claw, 2: Elbow, 3: Shoulder, 4: Base
 
 unsigned long lastServoUpdate = 0;
-const unsigned long SERVO_INTERVAL = 8; // ms per 1-degree step (faster)
+unsigned long servoInterval = 8; // ms per 1-degree step (dynamic)
 
 // =====================================================
 // Conveyor Settings
@@ -202,6 +202,7 @@ void setup() {
     if (server.hasArg("shoulder")) targetShoulder = server.arg("shoulder").toInt();
     if (server.hasArg("elbow")) targetElbow = server.arg("elbow").toInt();
     if (server.hasArg("claw")) targetClaw = server.arg("claw").toInt();
+    if (server.hasArg("speed")) servoInterval = server.arg("speed").toInt();
 
     // No blocking delays here, just return instantly
     server.send(200, "text/plain", "OK");
@@ -275,8 +276,8 @@ void loop() {
 
   unsigned long currentMillis = millis();
 
-  // Servo Smoothing Logic: step 1 degree every SERVO_INTERVAL
-  if (currentMillis - lastServoUpdate >= SERVO_INTERVAL) {
+  // Servo Smoothing Logic: step 1 degree every servoInterval
+  if (currentMillis - lastServoUpdate >= servoInterval) {
     lastServoUpdate = currentMillis;
 
     // Sequential Homing State Machine

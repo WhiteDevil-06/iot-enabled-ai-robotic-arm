@@ -44,11 +44,13 @@ const ControlCenter = () => {
   const armStateRef = useRef(armState);
   const recordingBinRef = useRef(recordingBin);
   const tempBinSequenceRef = useRef(tempBinSequence);
+  const isPlayingRef = useRef(isPlaying);
   
   // Keep refs in sync with state
   useEffect(() => { armStateRef.current = armState; }, [armState]);
   useEffect(() => { recordingBinRef.current = recordingBin; }, [recordingBin]);
   useEffect(() => { tempBinSequenceRef.current = tempBinSequence; }, [tempBinSequence]);
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
   const displacementsRef = useRef({ base: 0, shoulder: 0, elbow: 0, claw: 0 });
   const joystickIntervalRef = useRef(null);
@@ -175,7 +177,8 @@ const ControlCenter = () => {
       const target = pendingStateRef.current;
       if (!target) return;
 
-      const url = `http://${espIp}/move?base=${target.base}&shoulder=${target.shoulder}&elbow=${target.elbow}&claw=${target.claw}`;
+      const speed = isPlayingRef.current ? 16 : 8; // Slower speed during playback
+      const url = `http://${espIp}/move?base=${target.base}&shoulder=${target.shoulder}&elbow=${target.elbow}&claw=${target.claw}&speed=${speed}`;
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 1000);
