@@ -25,14 +25,14 @@ The AI-Based Robotic Fruit Sorting System integrates a laptop-based AI predictio
 ## 4. Communication Pipeline
 - **Network**: ESP32 broadcasts its own WiFi network. Laptop connects directly.
 - **Protocol**: HTTP GET requests.
-- **Endpoint**: ESP32 exposes `GET /move?base=X&shoulder=Y&elbow=Z&claw=W`.
-- **Throttling**: Dashboard frontend limits requests to every 150ms during manual control to maintain stability.
+- **Endpoint**: ESP32 exposes `GET /move?base=X&shoulder=Y&elbow=Z&claw=W&speed=S`.
+- **Throttling**: Dashboard frontend limits requests to every 60ms during manual joystick control to maintain stutter-free smooth interpolation.
 
 ## 5. Dashboard Architecture
-- **Frontend**: A React/Vite web application (`argobot-app`) branded as ArgoBot AI.
-- Provides manual override (joystick/sliders) and live monitoring (telemetry, prediction logs).
-- Connects directly to the ESP32 IP (`192.168.1.100`) via client-side fetch for manual movement (`/move`), conveyor controls (`/conveyor`), and status polling (`/status`).
-- Controls ESP32 mode (`/setMode`) between Web (dashboard overrides) and Physical (hardware joysticks).
+- **Frontend**: A React/Vite web application (`argobot-app`) branded as AgroBot AI.
+- Provides manual override (joystick/sliders), sequence recording (Bins), and live monitoring (telemetry, prediction logs).
+- Connects directly to the ESP32 IP (`192.168.4.1`) via client-side fetch for manual movement (`/move`), conveyor controls (`/conveyor`), and status polling (`/status`).
+- ESP32 Firmware acts as a purely non-blocking state machine using `millis()`, allowing seamless multitasking between WiFi HTTP requests and servo interpolation.
 
 ## 6. Final Deployment Flow
 - **Environment**: Local execution only (No cloud deployment).

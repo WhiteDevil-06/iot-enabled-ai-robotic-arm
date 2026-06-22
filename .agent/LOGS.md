@@ -1,5 +1,29 @@
 # Project Session Logs
 
+## Session: 2026-06-22
+
+### What Was Done
+- **React Frontend Integration**: Fully ported the legacy HTML/JS dashboard into a modern React application (`argobot-app`). Implemented glassmorphism UI, interactive joysticks, sliders, and Toast notifications.
+- **Dynamic Servo Speed API**: Modified ESP32 `/move` endpoint to accept a `speed` parameter. Implemented fast interpolation (`8ms`) for responsive manual joystick control, and slow interpolation (`16ms`) for smooth cinematic sequence playback.
+- **Homing Fixes**: Replaced simultaneous reset (which caused hardware collisions) with a frontend-orchestrated sequential homing routine (Claw -> Elbow -> Shoulder -> Base).
+- **Conveyor Inversion & Bug Fixes**:
+  - Inverted conveyor logic on hardware (`IN1`/`IN2`) to properly support forward/reverse via `/conveyor/*` routes.
+  - Swapped W/S and ArrowLeft/Right keys to match physical robotic arm orientation.
+  - Debounced React's `keydown` listener to block `event.repeat`, fixing a double-save bug during Bin recording.
+  - Eliminated joystick stutter by reducing HTTP dispatch throttle from 150ms to 60ms.
+- **State Machine Refactoring**: Completed the ESP32 firmware transition from blocking `delay()` to a purely `millis()` driven non-blocking state machine.
+
+### Key Results
+| Metric | Value |
+|--------|-------|
+| Manual Servo Interval | 8ms (~125°/s) |
+| Playback Servo Interval | 16ms (~60°/s) |
+| Joystick Dispatch Throttle | 60ms |
+
+### Next Steps
+- Re-attach the AI prediction module (`realtime_classifier.py`).
+- Conduct physical end-to-end tests with real fruit sorting.
+
 ## Session: 2026-06-20
 
 ### What Was Done

@@ -1,4 +1,4 @@
-# ArgoBot AI Dashboard UI Architecture
+# AgroBot AI Dashboard UI Architecture
 
 The frontend is a React/Vite application styled with modern glassmorphism.
 
@@ -7,6 +7,7 @@ The frontend is a React/Vite application styled with modern glassmorphism.
 - **Metrics**: High-level statistics of the system (e.g., accuracy, fruits sorted).
 - **Architecture**: A visual flow of how the laptop, AI, and ESP32 interact.
 - **Gallery**: Demo images and setup photos.
+- **Global Footer**: Displays GitHub repository link via inline SVG icon.
 
 ## 2. Dashboard / Control Center Page
 - **Webcam Feed**: Live video stream from the USB webcam processing AI predictions.
@@ -16,6 +17,7 @@ The frontend is a React/Vite application styled with modern glassmorphism.
 - **Live Prediction & Confidence**: Current class predicted by the CNN with threshold warnings.
 - **Conveyor Controls**: Manual override to Pause/Resume/Reverse the conveyor belt, including a PWM speed slider.
 - **Manual Control Overrides**: Twin Joysticks and independent sliders for manual ESP32 control via `/move`.
+- **Memory System (Bins)**: Ability to record, store, and playback custom sequence movements to Target Bins (Bin A & Bin B) using keyboard shortcuts (`Q` to save, `Esc` to stop). Includes sequential delays for cinematic, non-colliding playback.
 - **Toast Notifications**: Glassmorphic popups to alert users of mode changes, connection drops, and prediction events.
 
 ## 3. History Page

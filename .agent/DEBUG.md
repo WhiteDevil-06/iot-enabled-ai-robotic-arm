@@ -18,6 +18,12 @@
 - **Dynamic String Property Indexing**: Using dynamic string interpolation as object keys (e.g. `els[axis + 'Slider']` or `this.displacements[axis]`) triggers strict IDE linting errors and type-checking failures when objects lack dynamic index signatures. Refactored to explicit conditional branches using static references (e.g., `els.baseSlider`, `this.displacements.base`).
 - **Programmatic Control Loops**: Pulling hardware state synchronously via polling can trigger UI listener callbacks, causing a loopback echo that sends commands back to the hardware. Resolved by passing an `isProgrammatic` flag to layout updates to skip outgoing network calls during active sync.
 
+## Lessons Learned (Session: 2026-06-22)
+- **Keyboard Event Repeat Spam**: Holding down a key (like 'Q' to save a step) rapidly fires hundreds of `keydown` events, causing the React app to push dozens of duplicates to state arrays instantly. Resolved by checking `event.repeat` in the handler and ignoring continuous firing.
+- **Joystick Throttle Stutter**: Using an interval loop of `50ms` for joystick movements but throttling HTTP dispatches to `150ms` causes target values to "jump" massively every 150ms. Since the ESP32 was catching up quickly, it led to a start-stop "stutter". Aligning the HTTP throttle delay (`60ms`) with the joystick tick rate ensures the ESP32 receives tiny, constant target increments, resulting in smooth continuous hardware movement.
+- **Cinematic vs Manual Servo Speed**: Hardcoding `SERVO_INTERVAL` to `8ms` made manual joystick movement wonderfully responsive but made sequenced playback (where targets change by 60+ degrees at once) look extremely aggressive and jittery. Resolved by making `servoInterval` dynamically configurable via the `/move?speed=X` API, allowing the frontend to specify `speed=8` for manual overrides and `speed=16` for smooth, cinematic sequential playback.
+- **Sequential Homing vs Simultaneous Resets**: Clicking 'Reset' caused all servos to move simultaneously. Depending on arm geometry, this can cause the claw to smash into the base. Resolved by orchestrating homing locally in the frontend with `await new Promise` delays, stepping through Claw -> Elbow -> Shoulder -> Base sequentially to gracefully untangle the arm before retracting.
+
 ## Future Debugging Strategy
 1. **Confidence Thresholding**: If the model acts erratically, tune the `0.7` confidence threshold.
 2. **Webcam Feed Verification**: Always verify the input tensor visually before it is passed to `model.predict()`.
