@@ -75,11 +75,26 @@ const ControlCenter = () => {
     writeStoredString('esp_ip', val);
   };
 
-  // --- Reset All Robotic Arm Angles ---
-  const handleResetArm = useCallback(() => {
+  // --- Reset All Robotic Arm Angles (Sequential) ---
+  const handleResetArm = useCallback(async () => {
     if (isPlaying) return;
-    setArmState({ base: 90, shoulder: 90, elbow: 90, claw: 90 });
-    showToast("Robotic Arm Reset to Center Position", "warning");
+    setIsPlaying(true);
+    showToast("Resetting to Center Position sequentially...", "warning");
+
+    // Sequence: Claw -> Elbow -> Shoulder -> Base
+    setArmState((prev) => ({ ...prev, claw: 90 }));
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    setArmState((prev) => ({ ...prev, elbow: 90 }));
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    setArmState((prev) => ({ ...prev, shoulder: 90 }));
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    setArmState((prev) => ({ ...prev, base: 90 }));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    setIsPlaying(false);
   }, [isPlaying, showToast]);
 
   // --- Save current position to memory buffer ---
@@ -153,7 +168,7 @@ const ControlCenter = () => {
 
     const now = Date.now();
     const timeSinceLast = now - lastRequestTimeRef.current;
-    const delay = Math.max(0, 150 - timeSinceLast);
+    const delay = Math.max(0, 60 - timeSinceLast);
 
     sendTimerRef.current = setTimeout(async () => {
       sendTimerRef.current = null;
