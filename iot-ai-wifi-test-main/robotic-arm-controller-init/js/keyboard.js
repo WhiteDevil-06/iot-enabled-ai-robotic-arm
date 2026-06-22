@@ -57,10 +57,12 @@ export function initKeyboardControls() {
 
             // Memory System
             case 'q':
-                memoryAgent.saveAction();
+                if (!window.recordingBin) {
+                    memoryAgent.saveAction();
+                }
                 break;
             case 't':
-                memoryAgent.runActions();
+                if (!window.recordingBin) memoryAgent.runActions();
                 break;
             case 'r':
                 memoryAgent.clearActions();

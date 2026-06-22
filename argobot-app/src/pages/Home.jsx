@@ -159,7 +159,7 @@ const Home = () => {
         <div className="text-center mb-10 max-w-2xl mx-auto flex-col items-center">
           <span className="badge-pill mb-2">Value Proposition</span>
           <h2 className="text-3xl font-bold text-white mb-3">Optimize Factory Floor Efficiency</h2>
-          <p className="text-secondary text-base">ArgoBot AI integrates computer vision and robotics to automate inspection, reduce waste, and increase sorting throughput.</p>
+          <p className="text-secondary text-base">AgroBot AI integrates computer vision and robotics to automate inspection, reduce waste, and increase sorting throughput.</p>
         </div>
         <div className="grid grid-cols-4 gap-6">
           <div className="benefit-card card flex-col gap-4">
@@ -193,11 +193,11 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Section 3: How ArgoBot Works (Merged 5-Step Flow) */}
+      {/* Section 3: How AgroBot Works (Merged 5-Step Flow) */}
       <section className="how-it-works-section container mb-16">
         <div className="text-center mb-10 max-w-2xl mx-auto flex-col items-center">
           <span className="badge-pill mb-2">Operation Flow</span>
-          <h2 className="text-3xl font-bold text-white mb-3">How ArgoBot Works</h2>
+          <h2 className="text-3xl font-bold text-white mb-3">How AgroBot Works</h2>
           <p className="text-secondary text-base">A complete produce lifecycle from conveyor feeding to final bin routing.</p>
         </div>
         <div className="grid grid-cols-5 gap-4 relative">

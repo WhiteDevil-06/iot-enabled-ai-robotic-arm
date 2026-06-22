@@ -126,27 +126,31 @@ void setup()
   delay(1000);
 
   // -------------------------------------------------
-  // Servo PWM Setup
+  // Servo PWM Setup (Safely)
   // -------------------------------------------------
+  // We MUST set the duty cycle to 90 degrees BEFORE attaching the pin!
+  // If we attach the pin first, it sends a 0% duty cycle, causing the servos 
+  // to violently jump and draw massive current, crashing the ESP32 (Brownout).
+  
   ledcSetup(BASE_CH, PWM_FREQ, PWM_RES);
+  moveServo(BASE_CH, 90);
   ledcAttachPin(BASE_PIN, BASE_CH);
+  delay(300); // Stagger power draw
 
   ledcSetup(SHOULDER_CH, PWM_FREQ, PWM_RES);
+  moveServo(SHOULDER_CH, 90);
   ledcAttachPin(SHOULDER_PIN, SHOULDER_CH);
+  delay(300);
 
   ledcSetup(ELBOW_CH, PWM_FREQ, PWM_RES);
+  moveServo(ELBOW_CH, 90);
   ledcAttachPin(ELBOW_PIN, ELBOW_CH);
+  delay(300);
 
   ledcSetup(CLAW_CH, PWM_FREQ, PWM_RES);
-  ledcAttachPin(CLAW_PIN, CLAW_CH);
-
-  // -------------------------------------------------
-  // Center Servos
-  // -------------------------------------------------
-  moveServo(BASE_CH, 90);
-  moveServo(SHOULDER_CH, 90);
-  moveServo(ELBOW_CH, 90);
   moveServo(CLAW_CH, 90);
+  ledcAttachPin(CLAW_PIN, CLAW_CH);
+  delay(300);
 
   // -------------------------------------------------
   // Conveyor Setup
@@ -155,19 +159,16 @@ void setup()
   pinMode(CONVEYOR_IN2, OUTPUT);
 
   ledcSetup(CONVEYOR_CH, CONVEYOR_FREQ, CONVEYOR_RES);
-
-  // PWM attached to IN1
   ledcAttachPin(CONVEYOR_IN1, CONVEYOR_CH);
 
   digitalWrite(CONVEYOR_IN2, LOW);
-
   conveyorStop();
 
   // -------------------------------------------------
   // Start WiFi AP
   // -------------------------------------------------
   Serial.println("\nStarting WiFi Access Point...");
-
+  WiFi.mode(WIFI_AP); // Force AP mode to fix broadcasting issues
   WiFi.softAP(ssid, password);
 
   IPAddress IP = WiFi.softAPIP();

@@ -76,5 +76,18 @@
 - [x] Clone and customize Monica's React website (`argobot-app`).
 - [x] Integrate basic UI routes and manual controls via ESP32 API.
 - [x] Sync physical hardware movements with live dashboard visualization.
-- [ ] Connect the dashboard to the `realtime_classifier.py` backend stream.
+- [x] Added Bin Position (Bin A / Bin B) saving system into legacy HTML dashboard.
+- [x] Fixed legacy UI layout for better screen usage and removed toast notification spam.
+- [x] Globally renamed "ArgoBot" to "AgroBot" in the React app.
 - [ ] Connect the live AI prediction feed to the dashboard logic.
+
+## Milestone 8: Finalizing Features & Porting (UNDER TEST & PENDING)
+### Work Completed (But Needs Testing):
+- **ESP32 Firmware**: Added `/moveBin` route and logic to store/recall Bin A and Bin B states on the hardware level. **STATUS: UNDER TEST**.
+- **Legacy UI**: HTML/JS updated to allow capturing and storing multiple steps for Bin sequences.
+
+### Pending Work (To Be Done Next):
+1. **Test ESP Firmware**: Verify that `/moveBin` works correctly and does not conflict with manual movements or physical joysticks.
+2. **Replicate Legacy UI into React App**: The Bin Position recording logic (sequence recording, step playback, keyboard shortcuts) needs to be ported into the main `argobot-app` Control Center.
+3. **Connect AI Backend**: Integrate `realtime_classifier.py` stream to trigger the robotic arm sequence when a specific fruit is detected on the conveyor belt.
+4. **Infinite Gallery Video Support**: Implement `<video>` tag support for the `argobot-app` infinite gallery on the homepage.

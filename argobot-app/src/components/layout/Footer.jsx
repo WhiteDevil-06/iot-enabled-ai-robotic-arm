@@ -7,8 +7,8 @@ const Footer = () => {
       <div className="container footer-content grid grid-cols-2 gap-8">
         <div className="footer-brand flex-col gap-4">
           <div className="flex items-center gap-2">
-            <img src="/image.png" alt="ArgoBot AI Logo" className="logo-image" />
-            <span className="font-bold text-xl text-white">ArgoBot AI</span>
+            <img src="/image.png" alt="AgroBot AI Logo" className="logo-image" />
+            <span className="font-bold text-xl text-white">AgroBot AI</span>
           </div>
           <p className="text-sm text-gray-400">
             AI-Powered Robotic Produce Sorting System
@@ -26,7 +26,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="container footer-bottom flex justify-between items-center mt-12">
-        <p className="text-sm text-gray-500">© {new Date().getFullYear()} ArgoBot AI. All rights reserved.</p>
+        <p className="text-sm text-gray-500">© {new Date().getFullYear()} AgroBot AI. All rights reserved.</p>
       </div>
     </footer>
   );

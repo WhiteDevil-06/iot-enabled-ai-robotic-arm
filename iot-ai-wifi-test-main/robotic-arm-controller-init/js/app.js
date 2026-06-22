@@ -216,6 +216,116 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ─── Bin Memory System ──────────────────────────────────────────────────
+    let recordingBin = null;
+    let tempBinSequence = [];
+    let binASequence = JSON.parse(localStorage.getItem('binA') || '[]');
+    let binBSequence = JSON.parse(localStorage.getItem('binB') || '[]');
+
+    function setRecordingBin(bin) {
+        recordingBin = bin;
+        window.recordingBin = bin; // Expose for keyboard.js
+    }
+
+    function updateBinUI(bin) {
+        const seq = bin === 'A' ? binASequence : binBSequence;
+        const statusEl = document.getElementById(`bin-${bin.toLowerCase()}-status`);
+        if (statusEl) {
+            if (seq.length > 0) {
+                statusEl.textContent = `Saved (${seq.length} steps)`;
+                statusEl.style.color = '#3b82f6';
+            } else {
+                statusEl.textContent = 'Empty';
+                statusEl.style.color = '#6b7280';
+            }
+        }
+    }
+
+    updateBinUI('A');
+    updateBinUI('B');
+
+    ['A', 'B'].forEach(bin => {
+        const btnRecord = document.getElementById(`btn-record-bin-${bin.toLowerCase()}`);
+        const btnPlay = document.getElementById(`btn-play-bin-${bin.toLowerCase()}`);
+        const btnClear = document.getElementById(`btn-clear-bin-${bin.toLowerCase()}`);
+
+        if (btnRecord) {
+            btnRecord.addEventListener('click', () => {
+                setRecordingBin(bin);
+                tempBinSequence = [];
+                // Show banner
+                document.getElementById('recording-banner').style.display = 'flex';
+                document.getElementById('recording-banner-text').textContent = `🔴 RECORDING BIN ${bin}`;
+                document.getElementById('recording-banner-steps').textContent = `Steps Saved: 0`;
+            });
+        }
+
+        if (btnPlay) {
+            btnPlay.addEventListener('click', async () => {
+                const seq = bin === 'A' ? binASequence : binBSequence;
+                if (seq.length === 0) return;
+                showToast(`Starting Bin ${bin} playback...`, "success");
+                for (let i = 0; i < seq.length; i++) {
+                    stateManager.state.base = seq[i].base;
+                    stateManager.state.shoulder = seq[i].shoulder;
+                    stateManager.state.elbow = seq[i].elbow;
+                    stateManager.state.claw = seq[i].claw;
+                    stateManager.notify();
+                    await new Promise(r => setTimeout(r, 800));
+                }
+                showToast(`Bin ${bin} playback finished`, "success");
+            });
+        }
+
+        if (btnClear) {
+            btnClear.addEventListener('click', () => {
+                if (bin === 'A') {
+                    binASequence = [];
+                    localStorage.removeItem('binA');
+                } else {
+                    binBSequence = [];
+                    localStorage.removeItem('binB');
+                }
+                updateBinUI(bin);
+                showToast(`Bin ${bin} memory cleared`, "warning");
+            });
+        }
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (!recordingBin) return;
+        const key = e.key.toLowerCase();
+        
+        if (key === 'q') {
+            e.preventDefault(); // Prevent double triggering
+            e.stopImmediatePropagation();
+            
+            if (tempBinSequence.length >= 20) {
+                showToast(`Max limit of 20 steps reached for Bin ${recordingBin}!`, "warning");
+                return;
+            }
+            
+            tempBinSequence.push({ ...stateManager.state });
+            document.getElementById('recording-banner-steps').textContent = `Steps Saved: ${tempBinSequence.length}`;
+            // Removed toast spam here to keep UI clean
+        } else if (e.key === 'Escape') {
+            if (recordingBin === 'A') {
+                binASequence = tempBinSequence;
+                localStorage.setItem('binA', JSON.stringify(tempBinSequence));
+            } else {
+                binBSequence = tempBinSequence;
+                localStorage.setItem('binB', JSON.stringify(tempBinSequence));
+            }
+            updateBinUI(recordingBin);
+            showToast(`Bin ${recordingBin} sequence saved!`, "success");
+            
+            document.getElementById('recording-banner').style.display = 'none';
+            document.querySelector('.tab-btn[data-tab="bins-tab"]').click();
+            setRecordingBin(null);
+            tempBinSequence = [];
+        }
+    });
+
     // ─── Conveyor Control Logic ─────────────────────────────────────────────
     function updateConveyorUIState(conveyorState) {
         const surface = document.getElementById('conveyor-surface');

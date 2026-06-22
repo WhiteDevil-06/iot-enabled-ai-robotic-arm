@@ -208,7 +208,7 @@ const Dashboard = () => {
               <div className="telemetry-grid-pattern" />
               <Video className={`text-muted ${isRunning ? 'animate-pulse' : ''}`} size={48} />
               <div className="text-center">
-                <p className="text-sm font-semibold text-primary">ArgoBot AI Telemetry Feed</p>
+                <p className="text-sm font-semibold text-primary">AgroBot AI Telemetry Feed</p>
                 <p className="text-xs text-muted mt-1">Resolution: 1080p | FPS: 30 | Status: {isRunning ? 'Streaming' : 'Standby'}</p>
               </div>
             </div>

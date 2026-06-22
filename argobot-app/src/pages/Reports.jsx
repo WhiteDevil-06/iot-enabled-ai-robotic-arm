@@ -71,7 +71,7 @@ const Reports = () => {
     const blob = new Blob([[headers, ...rows].map((row) => row.map(escapeCell).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'argobot_filtered_history.csv';
+    link.download = 'agrobot_filtered_history.csv';
     link.click();
     URL.revokeObjectURL(link.href);
   };

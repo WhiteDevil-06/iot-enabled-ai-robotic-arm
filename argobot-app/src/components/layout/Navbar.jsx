@@ -25,9 +25,9 @@ const Navbar = () => {
   return (
     <nav className="navbar border-b">
       <div className="container flex items-center justify-between h-full">
-        <Link to="/" className="navbar-left flex items-center gap-2" aria-label="ArgoBot AI home">
-          <img src="/image.png" alt="ArgoBot AI Logo" className="logo-image" />
-          <span className="logo-text font-bold text-xl">ArgoBot AI</span>
+        <Link to="/" className="navbar-left flex items-center gap-2" aria-label="AgroBot AI home">
+          <img src="/image.png" alt="AgroBot AI Logo" className="logo-image" />
+          <span className="logo-text font-bold text-xl">AgroBot AI</span>
         </Link>
 
         <div className="navbar-center flex items-center gap-4">

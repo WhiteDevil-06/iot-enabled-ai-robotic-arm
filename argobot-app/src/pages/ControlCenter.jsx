@@ -23,6 +23,12 @@ const ControlCenter = () => {
   const [savedActions, setSavedActions] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // --- Bin Memory System ---
+  const [recordingBin, setRecordingBin] = useState(null); // 'A' | 'B' | null
+  const [tempBinSequence, setTempBinSequence] = useState([]);
+  const [binASequence, setBinASequence] = useState(() => JSON.parse(localStorage.getItem('binA')) || []);
+  const [binBSequence, setBinBSequence] = useState(() => JSON.parse(localStorage.getItem('binB')) || []);
+
   // --- Conveyor Belt State ---
   const [conveyorStatus, setConveyorStatus] = useState('stopped'); // 'stopped' | 'running' | 'reversing'
   const [conveyorSpeed, setConveyorSpeed] = useState(50);
@@ -96,6 +102,39 @@ const ControlCenter = () => {
     setIsPlaying(false);
     showToast("Action replay playback finished", "success");
   }, [isPlaying, savedActions, showToast]);
+
+  // --- Bin Sequence Action Dispatchers ---
+  const handleRecordBin = useCallback((bin) => {
+    setRecordingBin(bin);
+    setTempBinSequence([]);
+    setActiveTab('arm');
+  }, []);
+
+  const handlePlayBin = useCallback(async (bin) => {
+    const seq = bin === 'A' ? binASequence : binBSequence;
+    if (isPlaying || seq.length === 0) return;
+    setIsPlaying(true);
+    showToast(`Starting Bin ${bin} playback...`, "success");
+
+    for (let i = 0; i < seq.length; i++) {
+      setArmState({ ...seq[i] });
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    }
+
+    setIsPlaying(false);
+    showToast(`Bin ${bin} playback finished`, "success");
+  }, [isPlaying, binASequence, binBSequence, showToast]);
+
+  const handleClearBin = useCallback((bin) => {
+    if (bin === 'A') {
+      setBinASequence([]);
+      localStorage.removeItem('binA');
+    } else {
+      setBinBSequence([]);
+      localStorage.removeItem('binB');
+    }
+    showToast(`Bin ${bin} memory cleared`, "warning");
+  }, [showToast]);
 
   // --- Throttled ESP32 fetch move dispatcher ---
   const throttleSendMove = useCallback((state) => {
@@ -407,6 +446,35 @@ const ControlCenter = () => {
 
     const handleKeyUp = (e) => {
       const key = e.key.toLowerCase();
+
+      if (key === 'q') {
+        if (recordingBin) {
+          setTempBinSequence(prev => {
+            const next = [...prev, { ...armState }];
+            showToast(`Saved step ${next.length} for Bin ${recordingBin}`, "info");
+            return next;
+          });
+        } else {
+          handleSaveAction();
+        }
+      } else if (e.key === 'Escape' && recordingBin) {
+        // Finish recording
+        if (recordingBin === 'A') {
+          setBinASequence(tempBinSequence);
+          localStorage.setItem('binA', JSON.stringify(tempBinSequence));
+        } else {
+          setBinBSequence(tempBinSequence);
+          localStorage.setItem('binB', JSON.stringify(tempBinSequence));
+        }
+        showToast(`Bin ${recordingBin} sequence saved!`, "success");
+        setRecordingBin(null);
+        setTempBinSequence([]);
+        setActiveTab('bins');
+      } else if (key === 'r' && !recordingBin) {
+        handleClearActions();
+      } else if (key === 't' && !recordingBin) {
+        handleRunReplay();
+      }
       activeKeysRef.current.delete(key);
 
       switch (key) {
@@ -440,7 +508,7 @@ const ControlCenter = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isSystemActive, isPlaying, handleSaveAction, handleRunReplay, handleClearActions, startJoystickLoop, checkStopJoystickLoop]);
+  }, [isSystemActive, isPlaying, handleSaveAction, handleRunReplay, handleClearActions, startJoystickLoop, checkStopJoystickLoop, recordingBin, armState, tempBinSequence]);
 
   // --- Slider input changes handler ---
   const handleSliderChange = (axis, value) => {
@@ -452,8 +520,20 @@ const ControlCenter = () => {
   };
 
   return (
-    <div className="control-center-page container py-6 flex-col gap-6">
-      {/* Dynamic Toast Notification Rendering */}
+    <div className="control-center-wrapper">
+      {/* Floating Recording Banner */}
+      {recordingBin && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, background: '#ef4444', color: 'white', padding: '16px',
+          textAlign: 'center', zIndex: 9999, fontWeight: 'bold', display: 'flex', justifyContent: 'center', gap: '3rem', boxShadow: '0 4px 6px rgba(0,0,0,0.3)', fontSize: '1.1rem'
+        }}>
+          <span>🔴 RECORDING BIN {recordingBin}</span>
+          <span>Steps Saved: {tempBinSequence.length}</span>
+          <span>Press [Q] to Save Step &nbsp; | &nbsp; Press [Esc] to Finish Recording</span>
+        </div>
+      )}
+
+      {/* Toast notifications container */}
       <div className="react-toasts-notification-container" role="log">
         {toasts.map((t) => (
           <div key={t.id} className={`dynamic-toast-banner ${t.type}`} role="status">
@@ -480,10 +560,16 @@ const ControlCenter = () => {
               🦾 Robotic Arm
             </button>
             <button
+              className={`tab-btn ${activeTab === 'conveyor' ? 'active' : ''}`}
               onClick={() => setActiveTab('conveyor')}
-              className={`control-tab-button ${activeTab === 'conveyor' ? 'active' : ''}`}
             >
-              ⚙️ Conveyor Belt
+              <Activity size={16} /> Conveyor Belt
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'bins' ? 'active' : ''}`}
+              onClick={() => setActiveTab('bins')}
+            >
+              <Save size={16} /> Bin Positions
             </button>
           </div>
 
@@ -703,7 +789,7 @@ const ControlCenter = () => {
               </div>
             </div>
           </div>
-        ) : (
+        ) : activeTab === 'conveyor' ? (
           /* Conveyor Belt Controls Panel View */
           <div className="conveyor-belt-dashboard-panel card">
             <div className="panel-header text-center flex justify-between items-center border-b pb-2">
@@ -808,7 +894,7 @@ const ControlCenter = () => {
               </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

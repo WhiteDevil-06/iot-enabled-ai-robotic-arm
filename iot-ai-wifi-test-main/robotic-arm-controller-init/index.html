@@ -11,6 +11,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
 </head>
 <body>
+    <div id="recording-banner" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #ef4444; color: white; padding: 16px; text-align: center; z-index: 9999; font-weight: bold; justify-content: center; gap: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3); font-size: 1.1rem;">
+        <span id="recording-banner-text">🔴 RECORDING BIN A</span>
+        <span id="recording-banner-steps">Steps Saved: 0</span>
+        <span>Press [Q] to Save Step &nbsp; | &nbsp; Press [Esc] to Finish Recording</span>
+    </div>
     <div class="dashboard-container">
         <!-- Header -->
         <header class="dashboard-header">
@@ -23,6 +28,7 @@
             <div class="tabs-container">
                 <button class="tab-btn active" data-tab="arm-tab">🦾 Robotic Arm</button>
                 <button class="tab-btn" data-tab="conveyor-tab">⚙️ Conveyor Belt</button>
+                <button class="tab-btn" data-tab="bins-tab">💾 Bin Positions</button>
             </div>
             
             <!-- Connection Config -->
@@ -179,6 +185,39 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Tab 3: Bin Positions -->
+            <div id="bins-tab" class="tab-content">
+                <div style="display: flex; gap: 2rem; padding: 1rem; width: 100%; justify-content: center; box-sizing: border-box;">
+                    
+                    <!-- Bin A Card -->
+                    <div class="joystick-panel" style="flex: 1; padding: 2rem; text-align: center; max-width: 400px; height: fit-content; margin-top: 2rem; display: flex; flex-direction: column;">
+                        <h2 style="margin-bottom: 0.5rem; color: #10b981; font-size: 1.5rem; font-weight: bold;">Bin A</h2>
+                        <p style="margin-bottom: 1.5rem; color: #9ca3af; font-size: 1.1rem;">
+                            Status: <strong id="bin-a-status" style="color: #6b7280;">Empty</strong>
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                            <button id="btn-record-bin-a" class="btn secondary-btn" style="border-color: #ef4444; color: #ef4444; font-weight: bold;">🔴 Record Sequence</button>
+                            <button id="btn-play-bin-a" class="btn primary-btn">▶️ Play Sequence</button>
+                            <button id="btn-clear-bin-a" class="btn secondary-btn">🗑️ Clear Memory</button>
+                        </div>
+                    </div>
+
+                    <!-- Bin B Card -->
+                    <div class="joystick-panel" style="flex: 1; padding: 2rem; text-align: center; max-width: 400px; height: fit-content; margin-top: 2rem; display: flex; flex-direction: column;">
+                        <h2 style="margin-bottom: 0.5rem; color: #10b981; font-size: 1.5rem; font-weight: bold;">Bin B</h2>
+                        <p style="margin-bottom: 1.5rem; color: #9ca3af; font-size: 1.1rem;">
+                            Status: <strong id="bin-b-status" style="color: #6b7280;">Empty</strong>
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                            <button id="btn-record-bin-b" class="btn secondary-btn" style="border-color: #ef4444; color: #ef4444; font-weight: bold;">🔴 Record Sequence</button>
+                            <button id="btn-play-bin-b" class="btn primary-btn">▶️ Play Sequence</button>
+                            <button id="btn-clear-bin-b" class="btn secondary-btn">🗑️ Clear Memory</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Toast Notifications Container -->
