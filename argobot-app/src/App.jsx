@@ -20,9 +20,6 @@ const ScrollToTop = () => {
 };
 
 const AppLayout = () => {
-  const location = useLocation();
-  const isAppPage = ['/dashboard', '/reports', '/control-center'].includes(location.pathname);
-
   return (
     <div className="app-container flex-col min-h-screen">
       <Navbar />
@@ -38,7 +35,7 @@ const AppLayout = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      {!isAppPage && <Footer />}
+      <Footer />
     </div>
   );
 };

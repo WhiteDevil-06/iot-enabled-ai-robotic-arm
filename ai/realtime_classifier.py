@@ -245,26 +245,11 @@ class FruitClassifierApp:
         url = f"http://{self.args.esp32_ip}{endpoint}"
         
         def worker():
-            if self.args.sim:
-                print(f"[SIMULATION] GET {url}")
-                time.sleep(0.3)
-                self.thread_error = None
-                self.thread_active = False
-                return
-                
-            try:
-                print(f"[HTTP] Sending request: GET {url}")
-                response = requests.get(url, timeout=2.0)
-                print(f"[HTTP] Response: Code={response.status_code}, Content='{response.text.strip()}'")
-                if response.status_code == 200:
-                    self.thread_error = None
-                else:
-                    self.thread_error = f"HTTP {response.status_code}"
-            except Exception as e:
-                print(f"[HTTP] Error sending request: {e}")
-                self.thread_error = str(e)
-            finally:
-                self.thread_active = False
+            print(f"[AI DECOUPLED] Ignoring ESP32 request to: GET {url}")
+            time.sleep(0.1)
+            self.thread_error = None
+            self.thread_active = False
+            return
 
         t = threading.Thread(target=worker, daemon=True)
         t.start()

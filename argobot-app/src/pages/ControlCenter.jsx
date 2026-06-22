@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Activity, Play, Square, RefreshCcw, Save, Trash2, FastForward } from 'lucide-react';
+import { Activity, Play, Square, RefreshCcw, Save, Trash2, FastForward, Package, Box, PlayCircle, Disc, Cpu } from 'lucide-react';
 import nipplejs from 'nipplejs';
 import { readStoredString, writeStoredString } from '../utils/storage';
 import './ControlCenter.css';
@@ -40,6 +40,16 @@ const ControlCenter = () => {
   // --- Refs for Joystick DOM and movement control loop ---
   const leftJoystickZoneRef = useRef(null);
   const rightJoystickZoneRef = useRef(null);
+  // Refs for keyboard events (prevent stale closures)
+  const armStateRef = useRef(armState);
+  const recordingBinRef = useRef(recordingBin);
+  const tempBinSequenceRef = useRef(tempBinSequence);
+  
+  // Keep refs in sync with state
+  useEffect(() => { armStateRef.current = armState; }, [armState]);
+  useEffect(() => { recordingBinRef.current = recordingBin; }, [recordingBin]);
+  useEffect(() => { tempBinSequenceRef.current = tempBinSequence; }, [tempBinSequence]);
+
   const displacementsRef = useRef({ base: 0, shoulder: 0, elbow: 0, claw: 0 });
   const joystickIntervalRef = useRef(null);
   const activeKeysRef = useRef(new Set());
@@ -107,7 +117,6 @@ const ControlCenter = () => {
   const handleRecordBin = useCallback((bin) => {
     setRecordingBin(bin);
     setTempBinSequence([]);
-    setActiveTab('arm');
   }, []);
 
   const handlePlayBin = useCallback(async (bin) => {
@@ -164,7 +173,7 @@ const ControlCenter = () => {
       }
       lastRequestTimeRef.current = Date.now();
     }, delay);
-  }, [espIp, isWebsiteControl]);
+  }, [espIp, isSystemActive]);
 
   // --- Effect listening to armState updates to push to ESP32 ---
   useEffect(() => {
@@ -383,6 +392,7 @@ const ControlCenter = () => {
   // --- Keyboard listeners setup ---
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (e.repeat) return; // Prevent double firing on held keys
       if (document.activeElement.tagName.toLowerCase() === 'input') return;
       if (!isSystemActive || isPlaying) return;
 
@@ -425,15 +435,41 @@ const ControlCenter = () => {
           break;
         case 'q':
           movementKey = false;
-          handleSaveAction();
+          if (recordingBinRef.current) {
+             if (tempBinSequenceRef.current.length >= 20) {
+                 showToast(`Max limit of 20 steps reached for Bin ${recordingBinRef.current}!`, "warning");
+             } else {
+                 const currentCoords = { ...armStateRef.current };
+                 setTempBinSequence(prev => [...prev, currentCoords]);
+                 // No toast spam here!
+             }
+          } else {
+             handleSaveAction();
+          }
           break;
         case 't':
           movementKey = false;
-          handleRunReplay();
+          if (!recordingBinRef.current) handleRunReplay();
           break;
         case 'r':
           movementKey = false;
-          handleClearActions();
+          if (!recordingBinRef.current) handleClearActions();
+          break;
+        case 'escape':
+          movementKey = false;
+          if (recordingBinRef.current) {
+             const bin = recordingBinRef.current;
+             const seq = tempBinSequenceRef.current;
+             if (bin === 'A') {
+                setBinASequence(seq);
+                localStorage.setItem('binA', JSON.stringify(seq));
+             } else {
+                setBinBSequence(seq);
+                localStorage.setItem('binB', JSON.stringify(seq));
+             }
+             setRecordingBin(null);
+             showToast(`Bin ${bin} sequence saved!`, "success");
+          }
           break;
         default:
           movementKey = false;
@@ -447,34 +483,8 @@ const ControlCenter = () => {
     const handleKeyUp = (e) => {
       const key = e.key.toLowerCase();
 
-      if (key === 'q') {
-        if (recordingBin) {
-          setTempBinSequence(prev => {
-            const next = [...prev, { ...armState }];
-            showToast(`Saved step ${next.length} for Bin ${recordingBin}`, "info");
-            return next;
-          });
-        } else {
-          handleSaveAction();
-        }
-      } else if (e.key === 'Escape' && recordingBin) {
-        // Finish recording
-        if (recordingBin === 'A') {
-          setBinASequence(tempBinSequence);
-          localStorage.setItem('binA', JSON.stringify(tempBinSequence));
-        } else {
-          setBinBSequence(tempBinSequence);
-          localStorage.setItem('binB', JSON.stringify(tempBinSequence));
-        }
-        showToast(`Bin ${recordingBin} sequence saved!`, "success");
-        setRecordingBin(null);
-        setTempBinSequence([]);
-        setActiveTab('bins');
-      } else if (key === 'r' && !recordingBin) {
-        handleClearActions();
-      } else if (key === 't' && !recordingBin) {
-        handleRunReplay();
-      }
+      // Action keys (q, escape, r, t) are already handled in handleKeyDown
+      // We only need to process movement key release here
       activeKeysRef.current.delete(key);
 
       switch (key) {
@@ -557,16 +567,16 @@ const ControlCenter = () => {
               onClick={() => setActiveTab('arm')}
               className={`control-tab-button ${activeTab === 'arm' ? 'active' : ''}`}
             >
-              🦾 Robotic Arm
+              <Cpu size={16} /> Robotic Arm
             </button>
             <button
-              className={`tab-btn ${activeTab === 'conveyor' ? 'active' : ''}`}
+              className={`control-tab-button ${activeTab === 'conveyor' ? 'active' : ''}`}
               onClick={() => setActiveTab('conveyor')}
             >
               <Activity size={16} /> Conveyor Belt
             </button>
             <button
-              className={`tab-btn ${activeTab === 'bins' ? 'active' : ''}`}
+              className={`control-tab-button ${activeTab === 'bins' ? 'active' : ''}`}
               onClick={() => setActiveTab('bins')}
             >
               <Save size={16} /> Bin Positions
@@ -590,6 +600,27 @@ const ControlCenter = () => {
           </div>
         </div>
       </div>
+
+      {recordingBin && (
+        <div style={{
+          backgroundColor: '#ef4444', 
+          color: 'white', 
+          padding: '10px 20px', 
+          textAlign: 'center', 
+          fontWeight: 'bold', 
+          fontSize: '1.2rem',
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <span>🔴 RECORDING BIN {recordingBin} | Steps Saved: {tempBinSequence.length}</span>
+          <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>Press [Q] to Save Step | Press [Esc] to Finish</span>
+        </div>
+      )}
 
       {/* Main Controllers Tab Display */}
       <div className="control-panels-grid">
@@ -788,6 +819,62 @@ const ControlCenter = () => {
                 <span><b>R</b> Clear Buffer Memory</span>
               </div>
             </div>
+          </div>
+        ) : activeTab === 'bins' ? (
+          /* Bins Dashboard Panel View */
+          <div className="bins-dashboard-panel card">
+             <div className="panel-header text-center border-b pb-4 mb-6">
+                <h2 className="text-xl font-bold flex items-center justify-center gap-2">
+                  <Package className="text-primary" size={24} /> Bin Positions
+                </h2>
+                <span className="text-sm text-secondary">Record drop-off points for sorted fruits</span>
+             </div>
+             
+             <div className="bins-cards-container">
+                {/* Bin A Card */}
+                <div className="bin-card">
+                   <div className="bin-icon-wrapper">
+                     <Box size={48} className="text-blue-400" />
+                   </div>
+                   <h3 className="bin-card-title">Bin A</h3>
+                   <p className="bin-card-subtitle">
+                      Steps Recorded: <strong className="bin-card-count">{binASequence.length}</strong>
+                   </p>
+                   <div className="bin-card-actions">
+                      <button className="btn btn-outline bin-btn-record" onClick={() => handleRecordBin('A')}>
+                         <Disc size={18} className="animate-pulse" /> Record Sequence
+                      </button>
+                      <button className="btn btn-primary bin-btn-play" onClick={() => handlePlayBin('A')} disabled={binASequence.length === 0}>
+                         <PlayCircle size={18} /> Play Sequence
+                      </button>
+                      <button className="btn btn-outline bin-btn-clear" onClick={() => handleClearBin('A')} disabled={binASequence.length === 0}>
+                         <Trash2 size={18} /> Clear Memory
+                      </button>
+                   </div>
+                </div>
+
+                {/* Bin B Card */}
+                <div className="bin-card">
+                   <div className="bin-icon-wrapper">
+                     <Trash2 size={48} className="text-emerald-400" />
+                   </div>
+                   <h3 className="bin-card-title">Bin B</h3>
+                   <p className="bin-card-subtitle">
+                      Steps Recorded: <strong className="bin-card-count">{binBSequence.length}</strong>
+                   </p>
+                   <div className="bin-card-actions">
+                      <button className="btn btn-outline bin-btn-record" onClick={() => handleRecordBin('B')}>
+                         <Disc size={18} className="animate-pulse" /> Record Sequence
+                      </button>
+                      <button className="btn btn-primary bin-btn-play" onClick={() => handlePlayBin('B')} disabled={binBSequence.length === 0}>
+                         <PlayCircle size={18} /> Play Sequence
+                      </button>
+                      <button className="btn btn-outline bin-btn-clear" onClick={() => handleClearBin('B')} disabled={binBSequence.length === 0}>
+                         <Trash2 size={18} /> Clear Memory
+                      </button>
+                   </div>
+                </div>
+             </div>
           </div>
         ) : activeTab === 'conveyor' ? (
           /* Conveyor Belt Controls Panel View */

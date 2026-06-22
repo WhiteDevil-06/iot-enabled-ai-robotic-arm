@@ -91,3 +91,12 @@
 2. **Replicate Legacy UI into React App**: The Bin Position recording logic (sequence recording, step playback, keyboard shortcuts) needs to be ported into the main `argobot-app` Control Center.
 3. **Connect AI Backend**: Integrate `realtime_classifier.py` stream to trigger the robotic arm sequence when a specific fruit is detected on the conveyor belt.
 4. **Infinite Gallery Video Support**: Implement `<video>` tag support for the `argobot-app` infinite gallery on the homepage.
+
+## Milestone 9: Project Restructure & Stability ✅ COMPLETED
+- [x] Temporarily decouple AI subsystem (`realtime_classifier.py` intercepts requests to ESP32).
+- [x] Completely refactor `esp32-firmware.ino` into a non-blocking state machine.
+- [x] Replace blocking delays with `millis()` timer and Target Position System (1-degree increments per 15ms).
+- [x] Add explicit `/conveyor` and `/home` endpoints in firmware.
+- [x] Fix React frontend double-save bug on `Q` keypress via `event.repeat` blocking.
+- [x] Re-style React Control Center panels with glassmorphism and `lucide-react` icons.
+- [x] Embed GitHub repository SVG icon in the global frontend Footer.

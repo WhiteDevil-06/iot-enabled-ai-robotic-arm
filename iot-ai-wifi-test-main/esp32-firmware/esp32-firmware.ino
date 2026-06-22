@@ -42,11 +42,27 @@ const int SERVO_MIN = 1638;
 const int SERVO_MAX = 8192;
 
 // =====================================================
+// Target Position System (Servo Smoothing)
+// =====================================================
+int currentBase = 90;
+int currentShoulder = 90;
+int currentElbow = 90;
+int currentClaw = 90;
+
+int targetBase = 90;
+int targetShoulder = 90;
+int targetElbow = 90;
+int targetClaw = 90;
+
+unsigned long lastServoUpdate = 0;
+const unsigned long SERVO_INTERVAL = 15; // ms per 1-degree step
+
+// =====================================================
 // Conveyor Settings
 // =====================================================
 const int CONVEYOR_FREQ = 1000;
 const int CONVEYOR_RES = 8;
-const int CONVEYOR_SPEED = 50;
+int currentConveyorSpeed = 50; // Dynamic speed
 
 bool isConveyorRunning = false;
 bool isConveyorReversing = false;
@@ -54,25 +70,12 @@ bool isConveyorReversing = false;
 // Time tracking for Uptime
 unsigned long bootTime = 0;
 
-// Current angles for status API
-int currentBase = 90;
-int currentShoulder = 90;
-int currentElbow = 90;
-int currentClaw = 90;
-
 // =====================================================
-// Servo Function
+// Servo Function (Hardware Abstraction)
 // =====================================================
-void moveServo(int channel, int angle)
-{
+void writeServoDutyCycle(int channel, int angle) {
   if (angle < 0) angle = 0;
   if (angle > 180) angle = 180;
-
-  // Track the current angle for the /status endpoint
-  if (channel == BASE_CH) currentBase = angle;
-  else if (channel == SHOULDER_CH) currentShoulder = angle;
-  else if (channel == ELBOW_CH) currentElbow = angle;
-  else if (channel == CLAW_CH) currentClaw = angle;
 
   int dutyCycle = map(
     angle,
@@ -87,19 +90,16 @@ void moveServo(int channel, int angle)
 
 // =====================================================
 // Conveyor Functions
-// PWM on IN1
 // =====================================================
-void conveyorStart()
-{
+void conveyorStart() {
   isConveyorRunning = true;
   isConveyorReversing = false;
-  ledcWrite(CONVEYOR_CH, CONVEYOR_SPEED);
+  ledcWrite(CONVEYOR_CH, currentConveyorSpeed);
   digitalWrite(CONVEYOR_IN2, LOW);
   Serial.println("Conveyor Started");
 }
 
-void conveyorStop()
-{
+void conveyorStop() {
   isConveyorRunning = false;
   isConveyorReversing = false;
   ledcWrite(CONVEYOR_CH, 0);
@@ -107,8 +107,7 @@ void conveyorStop()
   Serial.println("Conveyor Stopped");
 }
 
-void conveyorReverse()
-{
+void conveyorReverse() {
   isConveyorRunning = false;
   isConveyorReversing = true;
   ledcWrite(CONVEYOR_CH, 0);
@@ -120,37 +119,32 @@ void conveyorReverse()
 // =====================================================
 // Setup
 // =====================================================
-void setup()
-{
+void setup() {
   Serial.begin(115200);
   delay(1000);
 
   // -------------------------------------------------
-  // Servo PWM Setup (Safely)
+  // Servo PWM Setup
   // -------------------------------------------------
-  // We MUST set the duty cycle to 90 degrees BEFORE attaching the pin!
-  // If we attach the pin first, it sends a 0% duty cycle, causing the servos 
-  // to violently jump and draw massive current, crashing the ESP32 (Brownout).
-  
   ledcSetup(BASE_CH, PWM_FREQ, PWM_RES);
-  moveServo(BASE_CH, 90);
+  writeServoDutyCycle(BASE_CH, 90);
   ledcAttachPin(BASE_PIN, BASE_CH);
-  delay(300); // Stagger power draw
+  delay(100);
 
   ledcSetup(SHOULDER_CH, PWM_FREQ, PWM_RES);
-  moveServo(SHOULDER_CH, 90);
+  writeServoDutyCycle(SHOULDER_CH, 90);
   ledcAttachPin(SHOULDER_PIN, SHOULDER_CH);
-  delay(300);
+  delay(100);
 
   ledcSetup(ELBOW_CH, PWM_FREQ, PWM_RES);
-  moveServo(ELBOW_CH, 90);
+  writeServoDutyCycle(ELBOW_CH, 90);
   ledcAttachPin(ELBOW_PIN, ELBOW_CH);
-  delay(300);
+  delay(100);
 
   ledcSetup(CLAW_CH, PWM_FREQ, PWM_RES);
-  moveServo(CLAW_CH, 90);
+  writeServoDutyCycle(CLAW_CH, 90);
   ledcAttachPin(CLAW_PIN, CLAW_CH);
-  delay(300);
+  delay(100);
 
   // -------------------------------------------------
   // Conveyor Setup
@@ -168,7 +162,7 @@ void setup()
   // Start WiFi AP
   // -------------------------------------------------
   Serial.println("\nStarting WiFi Access Point...");
-  WiFi.mode(WIFI_AP); // Force AP mode to fix broadcasting issues
+  WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid, password);
 
   IPAddress IP = WiFi.softAPIP();
@@ -187,6 +181,7 @@ void setup()
     String convStatus = isConveyorRunning ? "running" : (isConveyorReversing ? "reversing" : "stopped");
     String json = "{\"connected\":true,\"uptime\":" + String(uptime) + 
                   ",\"conveyor\":\"" + convStatus + "\"" +
+                  ",\"speed\":" + String(currentConveyorSpeed) +
                   ",\"base\":" + String(currentBase) +
                   ",\"shoulder\":" + String(currentShoulder) +
                   ",\"elbow\":" + String(currentElbow) +
@@ -196,87 +191,100 @@ void setup()
   });
 
   // =================================================
-  // ARM CONTROL API
+  // API: ARM CONTROL (Set Targets Only)
   // =================================================
-  server.on("/move", HTTP_GET, []()
-  {
+  server.on("/move", HTTP_GET, []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
 
-    bool isHoming = false;
-    if (server.hasArg("base") && server.hasArg("shoulder") && server.hasArg("elbow") && server.hasArg("claw")) {
-      if (server.arg("base").toInt() == 90 && server.arg("shoulder").toInt() == 90 && server.arg("elbow").toInt() == 90 && server.arg("claw").toInt() == 90) {
-        isHoming = true;
-      }
-    }
+    if (server.hasArg("base")) targetBase = server.arg("base").toInt();
+    if (server.hasArg("shoulder")) targetShoulder = server.arg("shoulder").toInt();
+    if (server.hasArg("elbow")) targetElbow = server.arg("elbow").toInt();
+    if (server.hasArg("claw")) targetClaw = server.arg("claw").toInt();
 
-    if (isHoming) {
-      // Sequential Homing Logic: Claw -> Elbow -> Shoulder -> Base
-      moveServo(CLAW_CH, 90);
-      delay(300); 
-      moveServo(ELBOW_CH, 90);
-      delay(300);
-      moveServo(SHOULDER_CH, 90);
-      delay(300);
-      moveServo(BASE_CH, 90);
-    } else {
-      // Fast, instantaneous movement
-      if (server.hasArg("base")) moveServo(BASE_CH, server.arg("base").toInt());
-      if (server.hasArg("shoulder")) moveServo(SHOULDER_CH, server.arg("shoulder").toInt());
-      if (server.hasArg("elbow")) moveServo(ELBOW_CH, server.arg("elbow").toInt());
-      if (server.hasArg("claw")) moveServo(CLAW_CH, server.arg("claw").toInt());
-    }
-
+    // No blocking delays here, just return instantly
     server.send(200, "text/plain", "OK");
   });
 
   // =================================================
-  // CONVEYOR START
+  // API: HOME EXPLICIT
   // =================================================
-  server.on("/conveyor/start", HTTP_GET, []()
-  {
+  server.on("/home", HTTP_GET, []() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    targetBase = 90;
+    targetShoulder = 90;
+    targetElbow = 90;
+    targetClaw = 90;
+    server.send(200, "text/plain", "Homing initiated");
+  });
+
+  // =================================================
+  // CONVEYOR ENDPOINTS
+  // =================================================
+  server.on("/conveyor/start", HTTP_GET, []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
     conveyorStart();
     server.send(200, "text/plain", "Conveyor Started");
   });
 
-  // =================================================
-  // CONVEYOR STOP
-  // =================================================
-  server.on("/conveyor/stop", HTTP_GET, []()
-  {
+  server.on("/conveyor/stop", HTTP_GET, []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
     conveyorStop();
     server.send(200, "text/plain", "Conveyor Stopped");
   });
 
-  // =================================================
-  // CONVEYOR REVERSE
-  // =================================================
-  server.on("/conveyor/reverse", HTTP_GET, []()
-  {
+  server.on("/conveyor/reverse", HTTP_GET, []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
     conveyorReverse();
     server.send(200, "text/plain", "Conveyor Reversed");
   });
 
+  server.on("/conveyor/speed", HTTP_GET, []() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    if (server.hasArg("value")) {
+      currentConveyorSpeed = server.arg("value").toInt();
+      // Apply immediately if running
+      if (isConveyorRunning) {
+        ledcWrite(CONVEYOR_CH, currentConveyorSpeed);
+      }
+    }
+    server.send(200, "text/plain", "Speed updated");
+  });
+
   // =================================================
   // ROOT
   // =================================================
-  server.on("/", HTTP_GET, []()
-  {
+  server.on("/", HTTP_GET, []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.send(200, "text/plain", "Robotic Arm + Conveyor Controller Online!");
   });
 
   server.begin();
-
   Serial.println("HTTP Server Started");
 }
 
 // =====================================================
-// Loop
+// Loop (Non-Blocking State Machine)
 // =====================================================
-void loop()
-{
-  server.handleClient();
+void loop() {
+  server.handleClient(); // Process incoming HTTP requests instantly
+
+  unsigned long currentMillis = millis();
+
+  // Servo Smoothing Logic: step 1 degree every SERVO_INTERVAL
+  if (currentMillis - lastServoUpdate >= SERVO_INTERVAL) {
+    lastServoUpdate = currentMillis;
+    bool moved = false;
+
+    if (currentBase < targetBase) { currentBase++; moved = true; writeServoDutyCycle(BASE_CH, currentBase); }
+    else if (currentBase > targetBase) { currentBase--; moved = true; writeServoDutyCycle(BASE_CH, currentBase); }
+
+    if (currentShoulder < targetShoulder) { currentShoulder++; moved = true; writeServoDutyCycle(SHOULDER_CH, currentShoulder); }
+    else if (currentShoulder > targetShoulder) { currentShoulder--; moved = true; writeServoDutyCycle(SHOULDER_CH, currentShoulder); }
+
+    if (currentElbow < targetElbow) { currentElbow++; moved = true; writeServoDutyCycle(ELBOW_CH, currentElbow); }
+    else if (currentElbow > targetElbow) { currentElbow--; moved = true; writeServoDutyCycle(ELBOW_CH, currentElbow); }
+
+    if (currentClaw < targetClaw) { currentClaw++; moved = true; writeServoDutyCycle(CLAW_CH, currentClaw); }
+    else if (currentClaw > targetClaw) { currentClaw--; moved = true; writeServoDutyCycle(CLAW_CH, currentClaw); }
+  }
 }
