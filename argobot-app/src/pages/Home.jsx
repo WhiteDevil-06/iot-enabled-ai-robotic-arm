@@ -13,7 +13,9 @@ const galleryImages = [
   { id: 7, src: '/gallery_img7.jpg', alt: '4-DOF Robotic Arm Structural Profiling' },
   { id: 8, src: '/gallery_img8.jpg', alt: 'Closed-Loop Object Sorting Operation Test' },
   { id: 9, src: '/gallery_img9.jpg', alt: 'Sensitive Object Grasping Calibration (Grape)' },
-  { id: 10, src: '/gallery_img10.jpg', alt: 'Placement Calibration & Bin Destination Routing' }
+  { id: 10, src: '/gallery_img10.jpg', alt: 'Placement Calibration & Bin Destination Routing' },
+  { id: 11, src: '/gallery_img11.png', alt: 'Real-Time Webcam Telemetry Feed & Team Calibration' },
+  { id: 12, src: '/gallery_img12.png', alt: 'Conveyor Sorting Setup & Local Control Stations (Bin A & Bin B)' }
 ];
 
 const Home = () => {
