@@ -41,6 +41,8 @@ const Dashboard = () => {
   const setRunningState = (running) => {
     setIsRunning(running);
     writeStoredString('system_running', String(running));
+    writeStoredString('conveyor_status', running ? 'running' : 'stopped');
+    writeStoredString('arm_active', String(running));
     if (!running) {
       setActiveItem({
         fruit: 'None',
