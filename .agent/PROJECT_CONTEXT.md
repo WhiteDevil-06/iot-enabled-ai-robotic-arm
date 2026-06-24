@@ -40,6 +40,7 @@ Build a fully integrated AI-powered robotic fruit sorting system capable of dete
 - Integrated a live local webcam video stream directly into the Dashboard telemetry.
 - Decoupled conveyor status updates from local control buttons to rely purely on global state sync and status queries.
 - Deactivated the AI model status card (defaulting to offline) for the decoupled testing phase.
+- Synchronized the IDE-level project rulebook (`rulebook.md`) and initialized workspace customizations (`.agents/AGENTS.md`) to guide future agent pair programming.
 
 
 ## Rejected Approaches
